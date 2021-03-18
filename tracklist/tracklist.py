@@ -22,9 +22,12 @@ class OziTrack:
         points['PLongitude'] = points['Longitude'].shift(1)
         points['Dist'] = points.apply(lambda x: OziTrack.calcdist(x.Latitude, x.Longitude, x.PLatitude, x.PLongitude), axis=1)
         track.points = points
-        print(track.points)
+#        print(track.points)
         track.distance = points['Dist'].sum()
-        track.date = points['TS'].min().date()
+        if not pd.isnull(points['Altitude'].min()):
+            track.date = points['TS'].min().date()
+        else:
+            track.date = None
         return track
 
     @classmethod
