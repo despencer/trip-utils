@@ -20,7 +20,7 @@ class OziTrack:
         points['Altitude'] = points['Altitude'].apply(lambda x: OziTrack.convertaltitude(x))
         points['PLatitude'] = points['Latitude'].shift(1)
         points['PLongitude'] = points['Longitude'].shift(1)
-        points['Dist'] = points.apply(lambda x: OziTrack.calcdist(x.Latitude, x.Longitude, x.PLatitude, x.PLongitude), axis=1)
+        points['Dist'] = points.apply(lambda x: OziTrack.calcdist(x.Start, x.Latitude, x.Longitude, x.PLatitude, x.PLongitude), axis=1)
         track.points = points
 #        print(track.points)
         track.distance = points['Dist'].sum()
@@ -47,10 +47,14 @@ class OziTrack:
         return x * 0.3048
 
     @classmethod
-    def calcdist(cls, lat1, long1, lat2, long2):
-        if pd.isnull(lat1) or pd.isnull(long1) or pd.isnull(lat2) or pd.isnull(long2):
-            return None
+    def calcdist(cls, start, lat1, long1, lat2, long2):
+        if start==1 or pd.isnull(lat1) or pd.isnull(long1) or pd.isnull(lat2) or pd.isnull(long2):
+            return 0.0
         return distance.distance( (lat1, long1), (lat2, long2) ).km
+
+def printduration(seconds):
+    hours, rem = divmod(seconds, 3600)
+    return "{:2}:{:02}".format(int(hours),int(rem/60))
 
 parser = argparse.ArgumentParser(description='Show tracks info')
 parser.add_argument('path', help='specifies path with tracks')
@@ -69,6 +73,10 @@ if args.sort == None:
     tracks.sort_values(by='Distance', ascending=False, inplace=True)
 else:
     tracks.sort_values(by=args.sort[0], inplace=True)
+tracks['Distance'] = tracks['Distance'].apply(lambda x: "{:6.2f}".format(x))
+tracks['Velocity'] = tracks['Velocity'].apply(lambda x: "{:4.1f}".format(x))
+tracks['Date'] = tracks['Date'].apply(lambda x: x.strftime("%d.%m.%Y"))
+tracks['Duration']=tracks['Duration'].apply(lambda x: printduration(x.seconds))
 print(tracks.head(10).to_string(index=False))
 
 # tracks = pd.DataFrame([f for f in listdir(args.path) if isfile(join(args.path,f))], columns=['Name'])
