@@ -56,6 +56,11 @@ def printduration(seconds):
     hours, rem = divmod(seconds, 3600)
     return "{:2}:{:02}".format(int(hours),int(rem/60))
 
+def guard(x, formatter):
+    if pd.isnull(x):
+        return "-"
+    return formatter(x)
+
 parser = argparse.ArgumentParser(description='Show tracks info')
 parser.add_argument('path', help='specifies path with tracks')
 parser.add_argument('--sort', nargs='+')
@@ -72,11 +77,11 @@ tracks = pd.DataFrame(tracks, columns=['Name','Distance','Date','Duration','Velo
 if args.sort == None:
     tracks.sort_values(by='Distance', ascending=False, inplace=True)
 else:
-    tracks.sort_values(by=args.sort[0], inplace=True)
+    tracks.sort_values(by=args.sort[0], ascending=False, inplace=True)
 tracks['Distance'] = tracks['Distance'].apply(lambda x: "{:6.2f}".format(x))
 tracks['Velocity'] = tracks['Velocity'].apply(lambda x: "{:4.1f}".format(x))
-tracks['Date'] = tracks['Date'].apply(lambda x: x.strftime("%d.%m.%Y"))
-tracks['Duration']=tracks['Duration'].apply(lambda x: printduration(x.seconds))
+tracks['Date'] = tracks['Date'].apply(lambda x: guard(x, lambda y: y.strftime("%d.%m.%Y")))
+tracks['Duration']=tracks['Duration'].apply(lambda x: guard(x, lambda y: printduration(y.seconds)))
 print(tracks.head(10).to_string(index=False))
 
 # tracks = pd.DataFrame([f for f in listdir(args.path) if isfile(join(args.path,f))], columns=['Name'])
