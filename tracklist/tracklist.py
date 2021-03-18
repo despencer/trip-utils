@@ -26,8 +26,12 @@ class OziTrack:
         track.distance = points['Dist'].sum()
         if not pd.isnull(points['Altitude'].min()):
             track.date = points['TS'].min().date()
+            track.duration = points['TS'].max() - points['TS'].min()
+            track.velocity = track.distance / ( (track.duration.days * 24) + (track.duration.seconds/3600.0) )
         else:
             track.date = None
+            track.duration = None
+            track.velocity = None
         return track
 
     @classmethod
@@ -58,8 +62,8 @@ for f in listdir(args.path):
     file = join(args.path,f)
     if isfile(file):
         t = OziTrack.loadfile(file)
-        tracks.append( (splitext(f)[0], t.distance, t.date) )
-tracks = pd.DataFrame(tracks, columns=['Name','Distance','Date'])
+        tracks.append( (splitext(f)[0], t.distance, t.date, t.duration, t.velocity) )
+tracks = pd.DataFrame(tracks, columns=['Name','Distance','Date','Duration','Velocity'])
 
 if args.sort == None:
     tracks.sort_values(by='Distance', ascending=False, inplace=True)
