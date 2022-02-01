@@ -1,2 +1,2 @@
 # heatmap
-Heat maps for tracks
+Heat maps for gps tracks
