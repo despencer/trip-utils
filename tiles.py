@@ -7,6 +7,10 @@ class TileCache:
     def __init__(self):
         pass
 
+class View:
+    def __init__(self):
+        self.bounds = geo.Bounds(0, 0, 1, 1)
+        self.zoom = 1
 
 def totilepoint(mappoint, zoom):
     x = mappoint.x + math.pi
