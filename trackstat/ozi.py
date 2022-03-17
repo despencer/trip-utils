@@ -22,7 +22,10 @@ class OziTrack:
         if not pd.isnull(points['Altitude'].min()):
             track.date = points['TS'].min().date()
             track.duration = points['TS'].max() - points['TS'].min()
-            track.velocity = track.distance / ( (track.duration.days * 24) + (track.duration.seconds/3600.0) )
+            if track.duration == 0 or track.duration == None:
+                track.velocity = None
+            else:
+                track.velocity = track.distance / ( (track.duration.days * 24) + (track.duration.seconds/3600.0) )
         else:
             track.date = None
             track.duration = None
