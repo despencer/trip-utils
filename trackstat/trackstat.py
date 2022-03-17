@@ -35,7 +35,7 @@ def printdf(tracks, sortby):
     df = pd.DataFrame(tracks, columns=['Name','Distance','Date','Duration','Velocity'])
     df.sort_values(by=sortby, ascending=False, inplace=True)
     return df.head(10).to_string(index=False, columns=['Name','Distance','Duration','Velocity'], formatters = 
-            { 'Name':lambda x: x[0:24].ljust(24,' '),
+            { 'Name':lambda x: x[0:30].ljust(30,' '),
                'Distance': lambda x: "{:6.2f}".format(x),
                'Duration': lambda x: guard(x, lambda y: printduration(y.seconds)),
                'Velocity': lambda x: "{:4.1f}".format(x)})
@@ -49,6 +49,7 @@ def dosection(path, rfile):
     print(f'Doing {path}')
     rfile.write('{0}\n{1}\n\n'.format(path, '='*len(path)))
     total = []
+    section = {}
     for base in basedirs:
         dirname = os.path.join(base, path)
         if os.path.isdir(dirname):
@@ -57,11 +58,18 @@ def dosection(path, rfile):
                 if os.path.isdir(sub):
                     tracks = loadtracks(sub)
                     total.extend(tracks)
-                    printsection(tracks, rfile)
+                    if d in section:
+                        section[d].extend(tracks)
+                    else:
+                        section[d] = tracks
+    for t in section.values():
+        printsection(t, rfile)
     printsection(total, rfile)
 
 if __name__ == "__main__":
     with open(rfn, 'w') as rfile:
         dosection('walking', rfile)
         dosection('velo', rfile)
+        dosection('car', rfile)
+        dosection('travels', rfile)
     print(f'see {rfn} for results')
