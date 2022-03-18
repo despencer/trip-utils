@@ -37,7 +37,7 @@ def printdf(tracks, sortby):
     return df.head(10).to_string(index=False, columns=['Name','Distance','Duration','Velocity'], formatters = 
             { 'Name':lambda x: x[0:30].ljust(30,' '),
                'Distance': lambda x: "{:6.2f}".format(x),
-               'Duration': lambda x: guard(x, lambda y: printduration(y.seconds)),
+               'Duration': lambda x: guard(x, lambda y: printduration(int(y.total_seconds()))),
                'Velocity': lambda x: "{:4.1f}".format(x)})
 
 def printsection(tracks, rfile):
@@ -45,7 +45,7 @@ def printsection(tracks, rfile):
     rfile.write(printdf(tracks, 'Duration')+"\n")
     rfile.write(printdf(tracks, 'Velocity')+"\n\n")
 
-def dosection(path, rfile):
+def dosection(path, rfile, showannual = True):
     print(f'Doing {path}')
     rfile.write('{0}\n{1}\n\n'.format(path, '='*len(path)))
     total = []
@@ -62,14 +62,15 @@ def dosection(path, rfile):
                         section[d].extend(tracks)
                     else:
                         section[d] = tracks
-    for t in section.values():
-        printsection(t, rfile)
+    if showannual:
+        for t in section.values():
+            printsection(t, rfile)
     printsection(total, rfile)
 
 if __name__ == "__main__":
     with open(rfn, 'w') as rfile:
         dosection('walking', rfile)
         dosection('velo', rfile)
-        dosection('car', rfile)
-        dosection('travels', rfile)
+        dosection('car', rfile, showannual = False)
+        dosection('travels', rfile, showannual = False)
     print(f'see {rfn} for results')

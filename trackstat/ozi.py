@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 import pandas as pd
 from geopy import distance
+import os.path
 
 class OziTrack:
     def __init__(self):
@@ -11,15 +12,20 @@ class OziTrack:
         track = cls()
         points = pd.read_csv(filename, skiprows=5, header=0, names=['Latitude','Longitude','Start','Altitude','Timestamp','t1','t2'])
         points.drop(columns = ['t1','t2'], inplace=True)
+
         points['TS'] = points.apply(lambda x: OziTrack.convertdate(x.Timestamp, x.Altitude), axis=1)
+        if pd.isna(points['TS'].min()):
+#    for tracks from navigator without elevation recording
+            trackdate = datetime.strptime(os.path.basename(filename)[0:8],'%Y%m%d')
+            trackdate = datetime(trackdate.year, trackdate.month, trackdate.day, tzinfo=timezone.utc)
+            points['TS'] = points.apply(lambda x: OziTrack.convertdate2(x.Timestamp, trackdate), axis=1)
+
         points['Altitude'] = points['Altitude'].apply(lambda x: OziTrack.convertaltitude(x))
         points['PLatitude'] = points['Latitude'].shift(1)
         points['PLongitude'] = points['Longitude'].shift(1)
         points['Dist'] = points.apply(lambda x: OziTrack.calcdist(x.Start, x.Latitude, x.Longitude, x.PLatitude, x.PLongitude), axis=1)
-#        track.points = points
-#        print(track.points)
         track.distance = points['Dist'].sum()
-        if not pd.isnull(points['Altitude'].min()):
+        if not pd.isna(points['TS'].min()):
             track.date = points['TS'].min().date()
             track.duration = points['TS'].max() - points['TS'].min()
             duration = ( (track.duration.days * 24) + (track.duration.seconds/3600.0) )
@@ -38,6 +44,13 @@ class OziTrack:
         if alt == -777.0:
             return None
         return (datetime(1899, 12, 30, tzinfo=timezone.utc) + timedelta(days=ozidate)).astimezone()
+
+    @classmethod
+    def convertdate2(cls, ozidate, trackdate):
+        candidate = (datetime(1899, 12, 30, tzinfo=timezone.utc) + timedelta(days=ozidate)).astimezone()
+        if (candidate - trackdate).total_seconds() < 28*3600:
+            return candidate
+        return None
 
     @classmethod
     def convertaltitude(cls, x):
