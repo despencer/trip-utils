@@ -3,9 +3,9 @@
 import os
 import logging
 
-class Reader:
+class ProtobufReader:
     def __init__(self, obf):
-        Reader.init()
+        ProtobufReader.init()
         self.obf = obf
         self.pos = 0
         self.size = 0
@@ -30,14 +30,14 @@ class Reader:
 
     def read_child(self, at):
         logging.debug('read_child start, at=%s', at)
-        child = Reader(self.obf)
+        child = ProtobufReader(self.obf)
         child.pos = at
         child.obf.seek(child.pos)
         desc, child.size = self.read_varint()
-        logging.debug('read_child desc read, desc=%s, size=%s', desc, child.size)
+        logging.debug('read_child desc read, desc=%s, size=%s, wiretype=%s, field=%s', desc, child.size, desc & 0x7, desc >> 3)
         child.wiretype = desc & 0x7
         child.fieldno = desc >> 3
-        reader = Reader.select_reader(child.wiretype)
+        reader = ProtobufReader.select_reader(child.wiretype)
         if reader == None:
             return None
         child.value, size = reader(self)
@@ -49,9 +49,9 @@ class Reader:
         value = 0
         while True:
             chunk = self.obf.read(1)[0]
+            value = ( ( chunk & 0x7F ) << ( size * 7) ) | value
             size = size + 1
-            value = (value << 7) | ( chunk & 0x7F )
-            if (value & 0x80) == 0:
+            if (chunk & 0x80) == 0:
                 return (value, size)
 
     def read_fixed64(self):
@@ -62,25 +62,25 @@ class Reader:
 
     def read_sequence(self):
         amount, size = self.read_varint()
-        value = self.obj.read( min(amount, 0x20) )
+        value = self.obf.read( min(amount, 0x20) )
         return (value, size + amount)
 
     @classmethod
     def select_reader(cls, wiretype):
-        if wiretype in Reader.readers:
-            return Reader.readers[wiretype]
+        if wiretype in ProtobufReader.readers:
+            return ProtobufReader.readers[wiretype]
         return None
 
     @classmethod
     def init(cls):
         if not hasattr(cls, 'readers'):
-            cls.readers = { 0:cls.read_varint, 1:cls.read_fixed64, 2:cls.read_sequence, 5:cls.read_fixed32 }
+            cls.readers = { 0:cls.read_varint, 1:cls.read_fixed64, 2:cls.read_sequence, 5:cls.read_fixed32, 6:cls.read_fixed32 }
             logging.basicConfig(filename='pbread.log', filemode='w', level=logging.DEBUG)
 
 def main(fname):
     with open(fname, 'rb') as obf:
-        reader = Reader(obf)
-        for c in reader.read_children(4):
-            print("{0} at {1} of {2} = {3}".format(c.fieldno, c.wiretype, c.pos, c.value) )
+        reader = ProtobufReader(obf)
+        for c in reader.read_children(3):
+            print("{0} at {1} of {2} = {3}".format(c.fieldno, c.pos, c.wiretype, c.value) )
 
 main('/mnt/mobihome/maps/Russia_central-federal-district_asia_2.obf')
