@@ -6,7 +6,8 @@ from pbreader import RawReader
 
 class ObfReader:
     def __init__(self, obf):
-        self.pbraw = RawReader(obf)
+        self.pbraw = RawReader.fromfile(obf)
+        self.mapindice = []
 
     def readheader(self):
         self.pbraw.readtags( defaultdict( lambda: self.pbraw.read_bywiretype,

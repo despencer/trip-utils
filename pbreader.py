@@ -3,6 +3,12 @@
 import os
 import logging
 
+class RawSection:
+    def __init__(self, reader, pos, size):
+        self.reader = reader
+        self.pos = pos
+        self.size = size
+
 class RawTag:
     def __init__(self, reader, pos, fieldno, wiretype):
         self.reader = reader
@@ -11,12 +17,18 @@ class RawTag:
         self.wiretype = wiretype
 
 class RawReader:
-    def __init__(self, pbf):
-        self.pbf = pbf
-        self.pos = 0
-        self.pbf.seek(0, os.SEEK_END)
-        self.limit = self.pbf.tell()
-        self.pbf.seek(0)
+    def __init__(self):
+        pass
+
+    @classmethod
+    def fromfile(cls, pbf):
+        reader = cls()
+        reader.pbf = pbf
+        reader.pos = 0
+        reader.pbf.seek(0, os.SEEK_END)
+        reader.limit = reader.pbf.tell()
+        reader.pbf.seek(0)
+        return reader
 
     def readtags(self, handlers):
         pos = self.pos
