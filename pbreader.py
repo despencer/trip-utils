@@ -4,8 +4,8 @@ import os
 import logging
 
 class RawSection:
-    def __init__(self, reader, pos, size):
-        self.reader = reader
+    def __init__(self, pbf, pos, size):
+        self.pbf = pbf
         self.pos = pos
         self.size = size
 
@@ -15,6 +15,10 @@ class RawTag:
         self.pos = pos
         self.fieldno = fieldno
         self.wiretype = wiretype
+
+    def section(self, size):
+        sect = RawSection(self.reader.pbf, self.pos, size)
+        return sect
 
 class RawReader:
     def __init__(self):
@@ -30,6 +34,14 @@ class RawReader:
         reader.pbf.seek(0)
         return reader
 
+    @classmethod
+    def fromsection(cls, section):
+        reader = cls()
+        reader.pbf = section.pbf
+        reader.pos = section.pos
+        reader.limit = section.size
+        return reader
+
     def readtags(self, handlers):
         pos = self.pos
         stop = False
@@ -38,6 +50,7 @@ class RawReader:
                 return
             self.pbf.seek(pos)
             desc, size = self.read_varint()
+            logging.debug('read tag %s type %s', desc>>3, desc&0x7)
             payload, stop = handlers[desc >> 3] ( RawTag(self, pos+size, desc>>3, desc&0x7 ) )
             pos = pos + size + payload
 
@@ -70,7 +83,7 @@ class RawReader:
 
     def read_bywiretype(self, tag):
         handlers = { 0:self.read_varint, 1:lambda: self.read_fixed(8, 'little'), 2:self.read_sequence,
-            5:lambda: self.read_fixed(4, 'little'), 6:self.readblob }
+            5:lambda: self.read_fixed(4, 'little'), 6:self.read_blob }
         if tag.wiretype in handlers:
             value, size = handlers[tag.wiretype]()
             return (size, False)
