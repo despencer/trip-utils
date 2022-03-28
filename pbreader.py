@@ -45,7 +45,7 @@ class RawReader:
         reader.limit = section.pos + section.size
         return reader
 
-    def readtags(self, handlers):
+    def readfilter(self, handler):
         pos = self.pos
         stop = False
         while True:
@@ -54,8 +54,11 @@ class RawReader:
             self.pbf.seek(pos)
             desc, size = self.read_varint()
             logging.debug('read tag %s type %s', desc>>3, desc&0x7)
-            payload, stop = handlers[desc >> 3] ( RawTag(self, pos+size, desc>>3, desc&0x7 ) )
+            payload, stop = handler( RawTag(self, pos+size, desc>>3, desc&0x7 ) )
             pos = pos + size + payload
+
+    def readtags(self, handlers):
+        self.readfilter( lambda tag: handlers[tag.fieldno](tag) )
 
     def read_varint(self):
         size = 0
@@ -84,13 +87,41 @@ class RawReader:
         value, size = self.read_varint()
         return (size, False)
 
-    def read_bywiretype(self, tag):
+    def readvalue_bywiretype(self, tag):
         handlers = { 0:self.read_varint, 1:lambda: self.read_fixed(8, 'little'), 2:self.read_sequence,
             5:lambda: self.read_fixed(4, 'little'), 6:self.read_blob }
         if tag.wiretype in handlers:
-            value, size = handlers[tag.wiretype]()
-            return (size, False)
-        return 0, True
+            return handlers[tag.wiretype]()
+        return (0, 0)
+
+    def read_bywiretype(self, tag):
+        value, size = self.readvalue_bywiretype(tag)
+        if size == 0:
+            return (0, True)
+        return (size, False)
+
+class ProtobufReader:
+    def __init__(self, pbf, pbstr):
+        self.pbf = pbf
+        self.pbstr = pbstr
+        self.indent = ''
+
+    def read(self):
+        reader = RawReader.fromfile(pbf)
+        reader.readfilter(self.handler)
+
+    def handler(self, tag):
+        if tag.wiretype == 6:
+            return tag.reader.read_bywiretype(tag)
+        value, size = tag.reader.readvalue_bywiretype(tag)
+        if tag.fieldno in self.pbstr:
+            tagstr = self.pbstr[tag.fieldno]
+            if 'format' in tagstr:
+                reprstr = ('{0:'+tagstr['format']+'}').format(value)
+                print('{0}{1}'.format(indent, reprstr)
+        if size == 0:
+            return (0, True)
+        return (size, False)
 
 class ProtobufReader:
     def __init__(self, obf):
