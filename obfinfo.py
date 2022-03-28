@@ -6,7 +6,7 @@ from obfreader import ObfReader
 def main(fname):
     with open(fname, 'rb') as obfile:
         reader = ObfReader(obfile)
-        reader.readheader()
+        reader.readall()
 
 if __name__ == '__main__':
     logging.basicConfig(filename='obinfo.log', filemode='w', level=logging.DEBUG)

@@ -9,6 +9,9 @@ class RawSection:
         self.pos = pos
         self.size = size
 
+    def __repr__(self):
+       return 'Section at {0:X} of size {1:X}'.format(self.pos, self.size)
+
 class RawTag:
     def __init__(self, reader, pos, fieldno, wiretype):
         self.reader = reader
@@ -16,8 +19,8 @@ class RawTag:
         self.fieldno = fieldno
         self.wiretype = wiretype
 
-    def section(self, size):
-        sect = RawSection(self.reader.pbf, self.pos, size)
+    def section(self, delta, size):
+        sect = RawSection(self.reader.pbf, self.pos + delta, size)
         return sect
 
 class RawReader:
@@ -39,7 +42,7 @@ class RawReader:
         reader = cls()
         reader.pbf = section.pbf
         reader.pos = section.pos
-        reader.limit = section.size
+        reader.limit = section.pos + section.size
         return reader
 
     def readtags(self, handlers):
