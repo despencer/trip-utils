@@ -1,10 +1,14 @@
 #!/usr/bin/python3
 
 import logging
+from datetime import datetime, timedelta
 from obfreader import ObfReader
 from pbreader import ProtobufReader
 
-obstr = { 1 : { 'format':'d' } }
+def unixtime(x):
+    return datetime(1970,1,1)+timedelta(milliseconds=x)
+
+obstr = { 1 : { 'format':'d' }, 18:{'format':'', 'factory':unixtime} }
 
 def main(fname):
     with open(fname, 'rb') as obfile:

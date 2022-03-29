@@ -116,8 +116,11 @@ class ProtobufReader:
         value, size = tag.reader.readvalue_bywiretype(tag)
         if tag.fieldno in self.pbstr:
             tagstr = self.pbstr[tag.fieldno]
+            obj = value
+            if 'factory' in tagstr:
+                obj = tagstr['factory'](value)
             if 'format' in tagstr:
-                reprstr = ('{0:'+tagstr['format']+'}').format(value)
+                reprstr = ('{0:'+tagstr['format']+'}').format(obj)
                 print('{0}{1}'.format(self.indent, reprstr))
         if size == 0:
             return (0, True)
