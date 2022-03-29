@@ -78,8 +78,11 @@ class RawReader:
         value = self.pbf.read( min(amount, 0x20) )
         return (value, size + amount)
 
+    def read_blobamount(self):
+        return self.read_fixed(4, 'big')
+
     def read_blob(self):
-        amount, size = self.read_fixed(4, 'big')
+        amount, size = self.read_blobamount()
         value = self.pbf.read( min(amount, 0x20) )
         return (value, size + amount)
 
@@ -110,8 +113,21 @@ class ProtobufReader:
         reader = RawReader.fromfile(self.pbf)
         reader.readfilter(self.handler)
 
+    def readsection(self, section):
+        reader = RawReader.fromsection(section)
+        reader.readfilter(self.handler)
+
     def handler(self, tag):
         if tag.wiretype == 6:
+            if tag.fieldno in self.pbstr:
+                tagstr = self.pbstr[tag.fieldno]
+                if 'children' in tagstr:
+                    amount, size = tag.reader.read_blobamount()
+                    section = tag.section(size, amount)
+                    child = ProtobufReader(self.pbf, tagstr['children'])
+                    child.indent = self.indent + '    '
+                    child.readsection(section)
+                    return (size + amount, False)
             return tag.reader.read_bywiretype(tag)
         value, size = tag.reader.readvalue_bywiretype(tag)
         if tag.fieldno in self.pbstr:

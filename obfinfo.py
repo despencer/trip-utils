@@ -8,7 +8,8 @@ from pbreader import ProtobufReader
 def unixtime(x):
     return datetime(1970,1,1)+timedelta(milliseconds=x)
 
-obstr = { 1 : { 'format':'d' }, 18:{'format':'', 'factory':unixtime} }
+obstr = { 1 : { 'format':'d' }, 18:{'format':'', 'factory':unixtime},
+       6:{ 'children':{} } }
 
 def main(fname):
     with open(fname, 'rb') as obfile:
