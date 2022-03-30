@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from collections import Counter
 import os
 import logging
 
@@ -109,6 +110,8 @@ class ProtobufReader:
         self.pbf = pbf
         self.pbstr = pbstr
         self.indent = ''
+        self.printing = True
+        self.counter = Counter()
 
     def read(self):
         reader = RawReader.fromfile(self.pbf)
@@ -121,6 +124,7 @@ class ProtobufReader:
     def handler(self, tag):
         if tag.fieldno not in self.pbstr:
             return tag.reader.read_bywiretype(tag)
+        self.counter[tag.fieldno] += 1
         tagstr = self.pbstr[tag.fieldno]
         if tag.wiretype in (2, 6):
             return self.handleblob(tag, tagstr)
@@ -134,13 +138,15 @@ class ProtobufReader:
             section = tag.section(size, amount)
             child = ProtobufReader(self.pbf, tagstr['children'])
             child.indent = self.indent + '    '
+            if 'print' in tagstr and tagstr['print'] != self.counter[tag.fieldno]-1:
+                child.printing = False
             child.readsection(section)
         else:
             if 'factory' in tagstr:
                 value = self.pbf.read(amount)
         if 'factory' in tagstr:
                 value = tagstr['factory'](value)
-        self.handleprint(value, tagstr)
+        self.handleprint(value, tag, tagstr)
         return (size + amount, False)
 
     def handlesimple(self, tag, tagstr):
@@ -148,10 +154,14 @@ class ProtobufReader:
         obj = value
         if 'factory' in tagstr:
             obj = tagstr['factory'](value)
-        self.handleprint(obj, tagstr)
+        self.handleprint(obj, tag, tagstr)
         return (size, False)
 
-    def handleprint(self, obj, tagstr):
+    def handleprint(self, obj, tag, tagstr):
+        if not self.printing:
+            return
+        if 'print' in tagstr and tagstr['print'] != self.counter[tag.fieldno]-1:
+            return
         if 'format' in tagstr:
             reprstr = ('{0:'+tagstr['format']+'}').format(obj)
             print('{0}{1}'.format(self.indent, reprstr))

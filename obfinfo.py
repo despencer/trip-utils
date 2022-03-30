@@ -9,7 +9,7 @@ def unixtime(x):
     return datetime(1970,1,1)+timedelta(milliseconds=x)
 
 obstr = { 1 : { 'format':'d' }, 18:{'format':'', 'factory':unixtime},
-    6:{ 'children':{  2:{'format':'', 'factory':ProtobufReader.readutf8}   } } }
+    6:{ 'children':{  2:{'format':'', 'factory':ProtobufReader.readutf8}   }, 'print':4 } }      # map_section
 
 def main(fname):
     with open(fname, 'rb') as obfile:
