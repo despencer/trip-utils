@@ -74,17 +74,18 @@ class RawReader:
         return ( int.from_bytes( self.pbf.read(size), byteorder), size)
 
     def read_sequence(self):
-        amount, size = self.read_varint()
-        value = self.pbf.read( min(amount, 0x20) )
-        return (value, size + amount)
+        amount, size = self.read_blobamount(2)
+        return (None, size + amount)
 
-    def read_blobamount(self):
-        return self.read_fixed(4, 'big')
+    def read_blobamount(self, wiretype):
+        if wiretype == 6:
+            return self.read_fixed(4, 'big')
+        else:
+            return self.read_varint()
 
     def read_blob(self):
-        amount, size = self.read_blobamount()
-        value = self.pbf.read( min(amount, 0x20) )
-        return (value, size + amount)
+        amount, size = self.read_blobamount(6)
+        return (None, size + amount)
 
     def read_varintvalue(self, tag):
         value, size = self.read_varint()
@@ -118,26 +119,43 @@ class ProtobufReader:
         reader.readfilter(self.handler)
 
     def handler(self, tag):
-        if tag.wiretype == 6:
-            if tag.fieldno in self.pbstr:
-                tagstr = self.pbstr[tag.fieldno]
-                if 'children' in tagstr:
-                    amount, size = tag.reader.read_blobamount()
-                    section = tag.section(size, amount)
-                    child = ProtobufReader(self.pbf, tagstr['children'])
-                    child.indent = self.indent + '    '
-                    child.readsection(section)
-                    return (size + amount, False)
+        if tag.fieldno not in self.pbstr:
             return tag.reader.read_bywiretype(tag)
-        value, size = tag.reader.readvalue_bywiretype(tag)
-        if tag.fieldno in self.pbstr:
-            tagstr = self.pbstr[tag.fieldno]
-            obj = value
+        tagstr = self.pbstr[tag.fieldno]
+        if tag.wiretype in (2, 6):
+            return self.handleblob(tag, tagstr)
+        else:
+            return self.handlesimple(tag, tagstr)
+
+    def handleblob(self, tag, tagstr):
+        amount, size = tag.reader.read_blobamount(tag.wiretype)
+        value = None
+        if 'children' in tagstr:
+            section = tag.section(size, amount)
+            child = ProtobufReader(self.pbf, tagstr['children'])
+            child.indent = self.indent + '    '
+            child.readsection(section)
+        else:
             if 'factory' in tagstr:
-                obj = tagstr['factory'](value)
-            if 'format' in tagstr:
-                reprstr = ('{0:'+tagstr['format']+'}').format(obj)
-                print('{0}{1}'.format(self.indent, reprstr))
-        if size == 0:
-            return (0, True)
+                value = self.pbf.read(amount)
+        if 'factory' in tagstr:
+                value = tagstr['factory'](value)
+        self.handleprint(value, tagstr)
+        return (size + amount, False)
+
+    def handlesimple(self, tag, tagstr):
+        value, size = tag.reader.readvalue_bywiretype(tag)
+        obj = value
+        if 'factory' in tagstr:
+            obj = tagstr['factory'](value)
+        self.handleprint(obj, tagstr)
         return (size, False)
+
+    def handleprint(self, obj, tagstr):
+        if 'format' in tagstr:
+            reprstr = ('{0:'+tagstr['format']+'}').format(obj)
+            print('{0}{1}'.format(self.indent, reprstr))
+
+    @classmethod
+    def readutf8(cls, value):
+        return value.decode('utf-8')
