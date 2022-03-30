@@ -134,19 +134,20 @@ class ProtobufReader:
     def handleblob(self, tag, tagstr):
         amount, size = tag.reader.read_blobamount(tag.wiretype)
         value = None
-        if 'children' in tagstr:
-            section = tag.section(size, amount)
-            child = ProtobufReader(self.pbf, tagstr['children'])
-            child.indent = self.indent + '    '
-            if 'print' in tagstr and tagstr['print'] != self.counter[tag.fieldno]-1:
-                child.printing = False
-            child.readsection(section)
-        else:
+        if 'children' not in tagstr:
             if 'factory' in tagstr:
                 value = self.pbf.read(amount)
         if 'factory' in tagstr:
                 value = tagstr['factory'](value)
         self.handleprint(value, tag, tagstr)
+        if 'children' in tagstr:
+            section = tag.section(size, amount)
+            child = ProtobufReader(self.pbf, tagstr['children'])
+            child.indent = self.indent + '    '
+            child.printing = self.printing
+            if 'print' in tagstr and tagstr['print'] != self.counter[tag.fieldno]-1:
+                child.printing = False
+            child.readsection(section)
         return (size + amount, False)
 
     def handlesimple(self, tag, tagstr):
@@ -162,8 +163,12 @@ class ProtobufReader:
             return
         if 'print' in tagstr and tagstr['print'] != self.counter[tag.fieldno]-1:
             return
+        if obj == None and 'default' in tagstr:
+            obj = tagstr['default']
         if 'format' in tagstr:
             reprstr = ('{0:'+tagstr['format']+'}').format(obj)
+            if 'name' in tagstr:
+                reprstr = '{0}={1}'.format(tagstr['name'], reprstr)
             print('{0}{1}'.format(self.indent, reprstr))
 
     @classmethod

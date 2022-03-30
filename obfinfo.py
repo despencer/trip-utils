@@ -9,7 +9,11 @@ def unixtime(x):
     return datetime(1970,1,1)+timedelta(milliseconds=x)
 
 obstr = { 1 : { 'format':'d' }, 18:{'format':'', 'factory':unixtime},
-    6:{ 'children':{  2:{'format':'', 'factory':ProtobufReader.readutf8}   }, 'print':4 } }      # map_section
+    6:{ 'children':{     # map_section
+        2:{'format':'', 'factory':ProtobufReader.readutf8},
+        5:{'format':'', 'default':'MapLevel', 'children':{
+            1:{'format':'', 'name':'max'}, 2:{'format':'', 'name':'min'} }}   },
+        'print':4 } }      # map_section
 
 def main(fname):
     with open(fname, 'rb') as obfile:
@@ -22,6 +26,6 @@ def main2(fname):
         reader.read()
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='obinfo.log', filemode='w', level=logging.DEBUG)
+    logging.basicConfig(filename='obinfo.log', filemode='w', level=logging.INFO)
     main2('/mnt/mobihome/maps/Russia_central-federal-district_asia_2.obf')
 
