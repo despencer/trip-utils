@@ -174,3 +174,7 @@ class ProtobufReader:
     @classmethod
     def readutf8(cls, value):
         return value.decode('utf-8')
+
+    @classmethod
+    def readzigzag(cls, value):
+        return (value>>1) ^ (-(value&1))
