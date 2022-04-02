@@ -2,12 +2,15 @@
 
 import logging
 from datetime import datetime, timedelta
+from schemareader import SchemaReader
 from pbreader import ProtobufReader
 
 def unixtime(x):
     return datetime(1970,1,1)+timedelta(milliseconds=x)
 
-obstr = { 1 : { 'format':'d' }, 18:{'format':'', 'factory':unixtime},
+obschema = { 'start':'header', 'structures':[
+        { 'name':'header', 'fields':
+    { 1 : { 'format':'d' }, 18:{'format':'', 'factory':unixtime},
     6:{ 'print':4, 'children':{     # map_section
         2:{'format':'', 'factory':ProtobufReader.readutf8},
         5:{'format':'', 'default':'MapLevel', 'print':0, 'children':{
@@ -16,11 +19,11 @@ obstr = { 1 : { 'format':'d' }, 18:{'format':'', 'factory':unixtime},
             7:{'format':'', 'name':'boxes', 'default':'TreeNode', 'children':{
                 1:{'format':'', 'name':'left', 'factory':ProtobufReader.readzigzag}, 2:{'format':'', 'name':'right', 'factory':ProtobufReader.readzigzag},
                 3:{'format':'', 'name':'top', 'factory':ProtobufReader.readzigzag}, 4:{'format':'', 'name':'bottom', 'factory':ProtobufReader.readzigzag},
-                5:{'format':'', 'name':'shift'}, 7:{'format':'', 'name':'boxes'} }} }}   } } }
+                5:{'format':'', 'name':'shift'}, 7:{'format':'', 'name':'boxes'} }} }}   } } } } ] }
 
 def main2(fname):
     with open(fname, 'rb') as obfile:
-        reader = ProtobufReader(obfile, obstr)
+        reader = SchemaReader(obfile, obschema)
         reader.read()
 
 if __name__ == '__main__':

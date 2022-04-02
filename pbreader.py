@@ -106,8 +106,9 @@ class RawReader:
         return (size, False)
 
 class ProtobufReader:
-    def __init__(self, pbf, pbstr):
+    def __init__(self, pbf, pbschema, pbstr):
         self.pbf = pbf
+        self.pbschema = pbschema
         self.pbstr = pbstr
         self.indent = ''
         self.printing = True
@@ -142,7 +143,7 @@ class ProtobufReader:
         self.handleprint(value, tag, tagstr)
         if 'children' in tagstr:
             section = tag.section(size, amount)
-            child = ProtobufReader(self.pbf, tagstr['children'])
+            child = ProtobufReader(self.pbf, self.pbschema, tagstr['children'])
             child.indent = self.indent + '    '
             child.printing = self.printing
             if 'print' in tagstr and tagstr['print'] != self.counter[tag.fieldno]-1:
