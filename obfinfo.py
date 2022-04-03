@@ -16,10 +16,11 @@ obschema = { 'start':'header', 'structures':[
         5:{'format':'', 'default':'MapLevel', 'print':0, 'children':{
             1:{'format':'', 'name':'max'}, 2:{'format':'', 'name':'min'}, 3:{'format':'', 'name':'left'},
             4:{'format':'', 'name':'right'}, 5:{'format':'', 'name':'top'}, 6:{'format':'', 'name':'bottom'},
-            7:{'format':'', 'name':'boxes', 'default':'TreeNode', 'children':{
-                1:{'format':'', 'name':'left', 'factory':ProtobufReader.readzigzag}, 2:{'format':'', 'name':'right', 'factory':ProtobufReader.readzigzag},
-                3:{'format':'', 'name':'top', 'factory':ProtobufReader.readzigzag}, 4:{'format':'', 'name':'bottom', 'factory':ProtobufReader.readzigzag},
-                5:{'format':'', 'name':'shift'}, 7:{'format':'', 'name':'boxes'} }} }}   } } } } ] }
+            7:{'format':'', 'name':'boxes', 'default':'TreeNode', 'structure':'treenode' } } } } } } },
+    { 'name':'treenode', 'fields': {
+        1:{'format':'', 'name':'left', 'factory':ProtobufReader.readzigzag}, 2:{'format':'', 'name':'right', 'factory':ProtobufReader.readzigzag},
+        3:{'format':'', 'name':'top', 'factory':ProtobufReader.readzigzag}, 4:{'format':'', 'name':'bottom', 'factory':ProtobufReader.readzigzag},
+        5:{'format':'', 'name':'shift'}, 7:{'format':'', 'name':'boxes'} }} ] }
 
 def main2(fname):
     with open(fname, 'rb') as obfile:

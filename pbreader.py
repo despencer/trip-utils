@@ -135,15 +135,19 @@ class ProtobufReader:
     def handleblob(self, tag, tagstr):
         amount, size = tag.reader.read_blobamount(tag.wiretype)
         value = None
-        if 'children' not in tagstr:
+        if not ('children' in tagstr or 'structure' in tagstr):
             if 'factory' in tagstr:
                 value = self.pbf.read(amount)
         if 'factory' in tagstr:
                 value = tagstr['factory'](value)
         self.handleprint(value, tag, tagstr)
-        if 'children' in tagstr:
+        if 'children' in tagstr or 'structure' in tagstr:
+            if 'children' in tagstr:
+                fields = tagstr['children']
+            else:
+                fields = self.pbschema.getstructure(tagstr['structure'])['fields']
             section = tag.section(size, amount)
-            child = ProtobufReader(self.pbf, self.pbschema, tagstr['children'])
+            child = ProtobufReader(self.pbf, self.pbschema, fields)
             child.indent = self.indent + '    '
             child.printing = self.printing
             if 'print' in tagstr and tagstr['print'] != self.counter[tag.fieldno]-1:
