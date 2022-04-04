@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime, timedelta
-from schemareader import SchemaReader
+from schemareader import Schema, SchemaReader
 from pbreader import ProtobufReader
 
 def unixtime(x):
@@ -10,21 +10,22 @@ def unixtime(x):
 
 obschema = { 'start':'header', 'structures':[
         { 'name':'header', 'fields':
-    { 1 : { 'format':'d' }, 18:{'format':'', 'factory':unixtime},
-    6:{ 'print':4, 'children':{     # map_section
-        2:{'format':'', 'factory':ProtobufReader.readutf8},
-        5:{'format':'', 'default':'MapLevel', 'print':0, 'children':{
-            1:{'format':'', 'name':'max'}, 2:{'format':'', 'name':'min'}, 3:{'format':'', 'name':'left'},
-            4:{'format':'', 'name':'right'}, 5:{'format':'', 'name':'top'}, 6:{'format':'', 'name':'bottom'},
-            7:{'format':'', 'name':'boxes', 'default':'TreeNode', 'structure':'treenode' } } } } } } },
+    { 1 : { 'name':'version' }, 18:{'name':'creation', 'factory':unixtime},
+    6:{ 'name':'section', 'children':{     # map_section
+        2:{'name':'name', 'factory':ProtobufReader.readutf8},
+        5:{'name':'maplevel', 'children':{
+            1:{'name':'max'}, 2:{'name':'min'}, 3:{'name':'left'}, 4:{'name':'right'}, 5:{'name':'top'}, 6:{'name':'bottom'},
+            7:{'name':'boxes', 'structure':'treenode' } } } } } } },
     { 'name':'treenode', 'fields': {
-        1:{'format':'', 'name':'left', 'factory':ProtobufReader.readzigzag}, 2:{'format':'', 'name':'right', 'factory':ProtobufReader.readzigzag},
-        3:{'format':'', 'name':'top', 'factory':ProtobufReader.readzigzag}, 4:{'format':'', 'name':'bottom', 'factory':ProtobufReader.readzigzag},
-        5:{'format':'', 'name':'shift'}, 7:{'format':'', 'name':'boxes'} }} ] }
+        1:{'name':'left', 'factory':ProtobufReader.readzigzag}, 2:{'name':'right', 'factory':ProtobufReader.readzigzag},
+        3:{'name':'top', 'factory':ProtobufReader.readzigzag}, 4:{'name':'bottom', 'factory':ProtobufReader.readzigzag},
+        5:{'name':'data'}, 7:{'name':'boxes', 'structure':'treenode'} }} ] }
 
 def main2(fname):
+    schema = Schema(obschema)
+#    schema.addformat({ 'structures':[ { 'name':'header', 'fields': { 6:{'print':4, 'children': { 5: { 'print':0 } } } } } ] } )
     with open(fname, 'rb') as obfile:
-        reader = SchemaReader(obfile, obschema)
+        reader = SchemaReader(obfile, schema)
         reader.read()
 
 if __name__ == '__main__':
