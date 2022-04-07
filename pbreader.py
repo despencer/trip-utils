@@ -138,9 +138,17 @@ class ProtobufReader:
         value = None
         if not ('children' in tagstr or 'structure' in tagstr):
             if 'factory' in tagstr:
-                value = self.pbf.read(amount)
-        if 'factory' in tagstr:
-                value = tagstr['factory'](value)
+                value = tagstr['factory'](self.pbf.read(amount))
+        else:
+            if 'children' in tagstr:
+                if 'factory' in tagstr:
+                    value = tagstr['factory']()
+            else:
+                structure = self.pbschema.getstructure(tagstr['structure'])
+                if 'factory' in structure:
+                    value = structure['factory']()
+        if value != None:
+            self.addattr(tagstr, value)
         self.handleprint(value, tag, tagstr)
         if 'children' in tagstr or 'structure' in tagstr:
             if 'children' in tagstr:
@@ -148,7 +156,7 @@ class ProtobufReader:
             else:
                 fields = self.pbschema.getstructure(tagstr['structure'])['fields']
             section = tag.section(size, amount)
-            child = ProtobufReader(self.pbf, self.pbschema, fields)
+            child = ProtobufReader(self.pbf, self.pbschema, fields, data=value)
             child.indent = self.indent + '    '
             child.printing = self.printing
             if 'print' in tagstr and tagstr['print'] != self.counter[tag.fieldno]-1:
@@ -161,8 +169,7 @@ class ProtobufReader:
         obj = value
         if 'factory' in tagstr:
             obj = tagstr['factory'](value)
-        if self.data != None:
-            setattr(self.data, tagstr['name'], obj)
+        self.addattr(tagstr, obj)
         self.handleprint(obj, tag, tagstr)
         return (size, False)
 
@@ -178,6 +185,16 @@ class ProtobufReader:
             if 'name' in tagstr:
                 reprstr = '{0}={1}'.format(tagstr['name'], reprstr)
             print('{0}{1}'.format(self.indent, reprstr))
+
+    def addattr(self, tagstr, value):
+        if self.data != None:
+            name = tagstr['name']
+            if hasattr(self.data, name):
+                exist = getattr(self.data, name)
+                if isinstance(exist, list):
+                    exist.append(value)
+                    return
+            setattr(self.data, tagstr['name'], value)
 
     @classmethod
     def readutf8(cls, value):
