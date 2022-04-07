@@ -32,10 +32,11 @@ obschema = { 'start':'header', 'structures':[
 
 def main2(fname):
     schema = Schema(obschema)
-    schema.addformat({ 'structures':[ { 'name':'header', 'fields': { 6:{'print':4, 'children': { 5: { 'print':0 } } } } } ] } )
+#    schema.addformat({ 'structures':[ { 'name':'header', 'fields': { 6:{'print':4, 'children': { 5: { 'print':0 } } } } } ] } )
     with open(fname, 'rb') as obfile:
         reader = SchemaReader(obfile, schema)
-        reader.read()
+        obfmap = reader.read()
+        print('Map version {0}'.format(obfmap.version))
 
 if __name__ == '__main__':
     logging.basicConfig(filename='obinfo.log', filemode='w', level=logging.INFO)

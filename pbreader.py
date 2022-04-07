@@ -106,13 +106,14 @@ class RawReader:
         return (size, False)
 
 class ProtobufReader:
-    def __init__(self, pbf, pbschema, pbstr):
+    def __init__(self, pbf, pbschema, pbstr, data = None):
         self.pbf = pbf
         self.pbschema = pbschema
         self.pbstr = pbstr
         self.indent = ''
         self.printing = True
         self.counter = Counter()
+        self.data = data
 
     def read(self):
         reader = RawReader.fromfile(self.pbf)
@@ -160,6 +161,8 @@ class ProtobufReader:
         obj = value
         if 'factory' in tagstr:
             obj = tagstr['factory'](value)
+        if self.data != None:
+            setattr(self.data, tagstr['name'], obj)
         self.handleprint(obj, tag, tagstr)
         return (size, False)
 

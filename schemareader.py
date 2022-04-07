@@ -42,5 +42,10 @@ class SchemaReader:
         self.schema = schema
 
     def read(self):
-        reader = ProtobufReader(self.datafile, self.schema, self.schema.start()['fields'])
+        start = self.schema.start()
+        result = None
+        if 'factory' in start:
+             result = start['factory']()
+        reader = ProtobufReader(self.datafile, self.schema, start['fields'], data = result)
         reader.read()
+        return result
