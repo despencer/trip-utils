@@ -111,7 +111,7 @@ class ProtobufReader:
         self.pbschema = pbschema
         self.pbstr = pbstr
         self.indent = ''
-        self.printing = True
+        self.printing = False
         self.counter = Counter()
         self.data = data
 

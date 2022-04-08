@@ -14,6 +14,8 @@ class Schema:
         return self.index[name]
 
     def addformat(self, format):
+        if not 'format' in self.schema:
+            self.schema['format']=''
         for s in self.schema['structures']:
             s['format']=''
             self.addformat_children( s['fields'] )
@@ -47,5 +49,7 @@ class SchemaReader:
         if 'factory' in start:
              result = start['factory']()
         reader = ProtobufReader(self.datafile, self.schema, start['fields'], data = result)
+        if 'format' in self.schema.schema:
+            reader.printing = True
         reader.read()
         return result
