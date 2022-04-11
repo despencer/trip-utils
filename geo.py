@@ -5,10 +5,10 @@ class Coordinate:
 
     def __repr__(self):
         if self.axis == 'lat':
-            prefix = 'N' if self.axis >= 0 else 'S'
+            prefix = 'N' if self.value >= 0 else 'S'
         else:
-            prefix = 'E' if self.axis >= 0 else 'W'
-        return "{0}{1}".format(prefix, abs(self.value))
+            prefix = 'E' if self.value >= 0 else 'W'
+        return "{0}{1:.3f}".format(prefix, abs(self.value))
 
 class Point:
     def __init__(self):
