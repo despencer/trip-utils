@@ -148,7 +148,7 @@ class ProtobufReader:
                 if 'factory' in structure:
                     value = structure['factory']()
         if value != None:
-            self.addattr(tagstr, value)
+            self.addattr(tagstr['name'], value)
         self.handleprint(value, tag, tagstr)
         if 'children' in tagstr or 'structure' in tagstr:
             if 'children' in tagstr:
@@ -161,7 +161,10 @@ class ProtobufReader:
             child.printing = self.printing
             if 'print' in tagstr and tagstr['print'] != self.counter[tag.fieldno]-1:
                 child.printing = False
-            child.readsection(section)
+            if (not self.printing) and ('lazy' in tagstr):
+                self.addattr(tagstr['lazy'], lambda : child.readsection(section))
+            else:
+                child.readsection(section)
         return (size + amount, False)
 
     def handlesimple(self, tag, tagstr):
@@ -169,7 +172,7 @@ class ProtobufReader:
         obj = value
         if 'factory' in tagstr:
             obj = tagstr['factory'](value)
-        self.addattr(tagstr, obj)
+        self.addattr(tagstr['name'], obj)
         self.handleprint(obj, tag, tagstr)
         return (size, False)
 
@@ -186,15 +189,14 @@ class ProtobufReader:
                 reprstr = '{0}={1}'.format(tagstr['name'], reprstr)
             print('{0}{1}'.format(self.indent, reprstr))
 
-    def addattr(self, tagstr, value):
+    def addattr(self, name, value):
         if self.data != None:
-            name = tagstr['name']
             if hasattr(self.data, name):
                 exist = getattr(self.data, name)
                 if isinstance(exist, list):
                     exist.append(value)
                     return
-            setattr(self.data, tagstr['name'], value)
+            setattr(self.data, name, value)
 
     @classmethod
     def readutf8(cls, value):
