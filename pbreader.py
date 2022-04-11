@@ -190,13 +190,25 @@ class ProtobufReader:
             print('{0}{1}'.format(self.indent, reprstr))
 
     def addattr(self, name, value):
-        if self.data != None:
-            if hasattr(self.data, name):
-                exist = getattr(self.data, name)
+        chain = name.split('.')
+        if len(chain) == 1:
+            self.addsimpleattr(self.data, name, value)
+        else:
+            data = self.data
+            if data == None:
+                return
+            for s in chain[0:-1]:
+                data = getattr(data, s)
+            self.addsimpleattr(data, chain[-1], value)
+
+    def addsimpleattr(self, data, name, value):
+        if data != None:
+            if hasattr(data, name):
+                exist = getattr(data, name)
                 if isinstance(exist, list):
                     exist.append(value)
                     return
-            setattr(self.data, name, value)
+            setattr(data, name, value)
 
     @classmethod
     def readutf8(cls, value):

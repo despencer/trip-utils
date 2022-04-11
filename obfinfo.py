@@ -13,9 +13,6 @@ import geo
 def unixtime(x):
     return datetime(1970,1,1)+timedelta(milliseconds=x)
 
-def getlon(x):
-    return (x * 360.0 / (1024.0 * 1<<21)) - 180.0
-
 obschema = { 'start':'header', 'structures':[
         { 'name':'header', 'factory': obfdata.Map, 'fields':
     { 1 : { 'name':'version' }, 18:{'name':'creation', 'factory':unixtime},
@@ -23,7 +20,7 @@ obschema = { 'start':'header', 'structures':[
         2:{'name':'name', 'factory':ProtobufReader.readutf8},
         5:{'name':'maplevels', 'structure':'maplevel' } } } } },
     { 'name':'maplevel', 'factory':obfdata.MapLevel, 'fields':{
-            1:{'name':'maxzoom'}, 2:{'name':'minzoom'}, 3:{'name':'left'}, 4:{'name':'right'}, 5:{'name':'top'}, 6:{'name':'bottom'},
+            1:{'name':'maxzoom'}, 2:{'name':'minzoom'}, 3:{'name':'ibounds.left.value'}, 4:{'name':'ibounds.right.value'}, 5:{'name':'ibounds.top.value'}, 6:{'name':'ibounds.bottom.value'},
             7:{'name':'_node', 'lazy':'_nodereader', 'structure':'treenode' } } },
     { 'name':'treenode', 'factory':obfdata.MapNode, 'fields': {
         1:{'name':'left', 'factory':ProtobufReader.readzigzag}, 2:{'name':'right', 'factory':ProtobufReader.readzigzag},
@@ -40,7 +37,7 @@ def main2(fname):
         for s in obfmap.sections:
             print('Section {0}'.format(s.name))
             for l in s.maplevels:
-                print('Map level {0}-{1} at {2}'.format(l.minzoom, l.maxzoom, l.node))
+                print('Map level {0}-{1} at {2}'.format(l.minzoom, l.maxzoom, l.bounds))
 
 if __name__ == '__main__':
     logging.basicConfig(filename='obinfo.log', filemode='w', level=logging.INFO)
