@@ -23,9 +23,16 @@ obschema = { 'start':'header', 'structures':[
             1:{'name':'maxzoom'}, 2:{'name':'minzoom'}, 3:{'name':'ibounds.left.value'}, 4:{'name':'ibounds.right.value'}, 5:{'name':'ibounds.top.value'}, 6:{'name':'ibounds.bottom.value'},
             7:{'name':'_node', 'lazy':'_nodereader', 'structure':'treenode' } } },
     { 'name':'treenode', 'factory':obfdata.MapNode, 'fields': {
-        1:{'name':'left', 'factory':ProtobufReader.readzigzag}, 2:{'name':'right', 'factory':ProtobufReader.readzigzag},
-        3:{'name':'top', 'factory':ProtobufReader.readzigzag}, 4:{'name':'bottom', 'factory':ProtobufReader.readzigzag},
+        1:{'name':'ibounds.left.value', 'factory':ProtobufReader.readzigzag}, 2:{'name':'ibounds.right.value', 'factory':ProtobufReader.readzigzag},
+        3:{'name':'ibounds.top.value', 'factory':ProtobufReader.readzigzag}, 4:{'name':'ibounds.bottom.value', 'factory':ProtobufReader.readzigzag},
         5:{'name':'data'}, 7:{'name':'_children', 'lazy':'_childrenreader','structure':'treenode'} }} ] }
+
+def printnodes(indent, node):
+    if len(node.children) == 0:
+        return
+    print('{0}Node at {1}, {2} children'.format(indent, node.bounds, len(node.children)))
+    for c in node.children:
+        printnodes(indent+'    ', c)
 
 def main2(fname):
     schema = Schema(obschema)
@@ -37,7 +44,8 @@ def main2(fname):
         for s in obfmap.sections:
             print('Section {0}'.format(s.name))
             for l in s.maplevels:
-                print('Map level {0}-{1} at {2}, root at {3}'.format(l.minzoom, l.maxzoom, l.bounds, l.node.bounds))
+                print('Map level {0}-{1} at {2}'.format(l.minzoom, l.maxzoom, l.bounds))
+                printnodes('    ', l.node)
 
 if __name__ == '__main__':
     logging.basicConfig(filename='obinfo.log', filemode='w', level=logging.INFO)

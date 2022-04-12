@@ -51,8 +51,18 @@ class MapNode:
     def __init__(self):
         self.ibounds = geo.Rectangle()
         self.bounds = geo.Rectangle()
-        self.children = []
         self._children = []
+        self._childrenreader = []
+
+    @property
+    def children(self):
+        if len(self._childrenreader) > 0:
+            for cr in self._childrenreader:
+                cr()
+            self._childrenreader.clear()
+            for c in self._children:
+                c.adjustbounds(self.ibounds)
+        return self._children
 
     def adjustbounds(self, parent):
         self.ibounds.left.value += parent.left.value
