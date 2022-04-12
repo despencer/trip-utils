@@ -25,12 +25,13 @@ obschema = { 'start':'header', 'structures':[
     { 'name':'treenode', 'factory':obfdata.MapNode, 'fields': {
         1:{'name':'ibounds.left.value', 'factory':ProtobufReader.readzigzag}, 2:{'name':'ibounds.right.value', 'factory':ProtobufReader.readzigzag},
         3:{'name':'ibounds.top.value', 'factory':ProtobufReader.readzigzag}, 4:{'name':'ibounds.bottom.value', 'factory':ProtobufReader.readzigzag},
-        5:{'name':'data'}, 7:{'name':'_children', 'lazy':'_childrenreader','structure':'treenode'} }} ] }
+        5:{'name':'_block', 'lazy':'_blockreader', 'structure':'mapblock'}, 7:{'name':'_children', 'lazy':'_childrenreader','structure':'treenode'} }},
+    { 'name':'mapblock', 'factory':obfdata.MapBlock, 'fields':{} } ] }
 
 def printnodes(indent, node):
     if len(node.children) == 0:
         return
-    print('{0}Node at {1}, {2} children'.format(indent, node.bounds, len(node.children)))
+    print('{0}Node at {1}, {2} children, mapblock={3}'.format(indent, node.bounds, len(node.children), 'Yes' if node.block != None else 'No'))
     for c in node.children:
         printnodes(indent+'    ', c)
 

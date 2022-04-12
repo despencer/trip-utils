@@ -53,6 +53,8 @@ class MapNode:
         self.bounds = geo.Rectangle()
         self._children = []
         self._childrenreader = []
+        self._block = None
+        self._blockreader = None
 
     @property
     def children(self):
@@ -64,6 +66,13 @@ class MapNode:
                 c.adjustbounds(self.ibounds)
         return self._children
 
+    @property
+    def block(self):
+        if self._blockreader != None:
+            self._blockreader()
+            self._blockreader = None
+        return self._block
+
     def adjustbounds(self, parent):
         self.ibounds.left.value += parent.left.value
         self.ibounds.top.value += parent.top.value
@@ -73,3 +82,7 @@ class MapNode:
         self.bounds.top.value = latitod(self.ibounds.top.value)
         self.bounds.right.value = lonitod(self.ibounds.right.value)
         self.bounds.bottom.value = latitod(self.ibounds.bottom.value)
+
+class MapBlock:
+    def __init__(self):
+        pass
