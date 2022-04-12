@@ -37,7 +37,7 @@ def main2(fname):
         for s in obfmap.sections:
             print('Section {0}'.format(s.name))
             for l in s.maplevels:
-                print('Map level {0}-{1} at {2}'.format(l.minzoom, l.maxzoom, l.bounds))
+                print('Map level {0}-{1} at {2}, root at {3}'.format(l.minzoom, l.maxzoom, l.bounds, l.node.bounds))
 
 if __name__ == '__main__':
     logging.basicConfig(filename='obinfo.log', filemode='w', level=logging.INFO)
