@@ -19,6 +19,13 @@ class Point:
     def __repr__(self):
         return "{0} @ {1}".format(self.lat, self.lon)
 
+    @classmethod
+    def fromlatlon(cls, lat, lon):
+        ret = cls()
+        ret.lat.value = lat
+        ret.lon.value = lon
+        return ret
+
 class Rectangle:
     def __init__(self):
         self.left = Coordinate()
@@ -30,3 +37,7 @@ class Rectangle:
 
     def __repr__(self):
         return "{0} @ {1} - {2} @ {3}".format(self.left, self.top, self.right, self.bottom)
+
+    def isinside(self, point):
+        return self.left.value <= point.lon.value and point.lon.value <= self.right.value and self.bottom.value <= point.lat.value and point.lat.value <= self.top.value
+
