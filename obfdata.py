@@ -12,6 +12,14 @@ class Map:
         self.version = None
         self.sections = []
 
+    def locatenodes(self, zoom, point):
+        nodes = []
+        for s in self.sections:
+           for ml in s.maplevels:
+                if ml.minzoom <= zoom and zoom <= ml.maxzoom:
+                     nodes.extend( ml.node.locatenodes(point) )
+        return nodes
+
 class Section:
     def __init__(self):
         self.name = None
@@ -79,6 +87,16 @@ class MapNode:
         self.bounds.top.value = latitod(self.ibounds.top.value)
         self.bounds.right.value = lonitod(self.ibounds.right.value)
         self.bounds.bottom.value = latitod(self.ibounds.bottom.value)
+
+    def locatenodes(self, point):
+        if not self.bounds.isinside(point):
+            return []
+        if self.block != None:
+            return [ self ]
+        nodes = []
+        for c in self.children:
+            nodes.extend( c.locatenodes(point) )
+        return nodes
 
 class MapBlock:
     def __init__(self):
