@@ -7,6 +7,7 @@ import geo
 def unixtime(x):
     return datetime(1970,1,1)+timedelta(milliseconds=x)
 
+# Top level object. original ObfInfo, proto OsmAndStructure. Loader ObfReader_P::readInfo
 class Map:
     def __init__(self):
         self.version = None
@@ -20,11 +21,13 @@ class Map:
                      nodes.extend( ml.node.locatenodes(point) )
         return nodes
 
+# A portion of a map, typically administrative region. original ObfMapSectionInfo. proto OsmAndMapIndex. Loader ObfMapSectionReader_P::read
 class Section:
     def __init__(self):
         self.name = None
         self.maplevels = []
 
+# Different maps for diffrent zooms. original ObfMapSectionLevel. proto OsmAndMapIndex_MapRootLevel. Loader ObfMapSectionReader::readMapLevelHeader
 class MapLevel:
     def __init__(self):
         self.minzoom = None
@@ -52,6 +55,8 @@ class MapLevel:
             self._bounds.bottom.value = latitod(self.ibounds.bottom.value)
         return self._bounds
 
+# original original ObfMapSectionLevelTreeNode. proto OsmAndMapIndex_MapRootLevel.  Loader ObfMapSectionReader::loadMapObjects/readMapLevelTreeNodes
+# children - original ObfMapSectionLevelTreeNode. proto OsmAndMapIndex_DataBox. loader ObfMapSectionReader::readTreeNodeChildren/readTreeNode
 class MapNode:
     def __init__(self):
         self.ibounds = geo.Rectangle()
@@ -100,8 +105,11 @@ class MapNode:
 
 class MapBlock:
     def __init__(self):
-        pass
+        self.strings = None
 
+class StringTable:
+    def __init__(self):
+        self.table = []
 
 obschema = { 'start':'header', 'structures':[
         { 'name':'header', 'factory': Map, 'fields':
@@ -116,7 +124,8 @@ obschema = { 'start':'header', 'structures':[
         1:{'name':'ibounds.left.value', 'factory':ProtobufReader.readzigzag}, 2:{'name':'ibounds.right.value', 'factory':ProtobufReader.readzigzag},
         3:{'name':'ibounds.top.value', 'factory':ProtobufReader.readzigzag}, 4:{'name':'ibounds.bottom.value', 'factory':ProtobufReader.readzigzag},
         5:{'name':'_block', 'lazy':'_blockreader', 'structure':'mapblock'}, 7:{'name':'_children', 'lazy':'_childrenreader','structure':'treenode'} }},
-    { 'name':'mapblock', 'factory':MapBlock, 'fields':{} } ] }
+    { 'name':'mapblock', 'factory':MapBlock, 'fields':{15:{'name':'strings', 'structure':'stringtable'} } },
+    { 'name':'stringtable', 'factory':StringTable, 'fields':{1:{'name':'table', 'factory':ProtobufReader.readutf8}} } ] }
 
 
 # longitude from integer to degrees

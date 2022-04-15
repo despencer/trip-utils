@@ -13,7 +13,7 @@ def main(fname, pfrom):
         obfmap = obfdata.readobf(obfile)
         nodes = obfmap.locatenodes(22, pfrom)
         for n in nodes:
-            print(n.bounds)
+            print(n.bounds, len(n.block.strings.table))
 
 if __name__ == '__main__':
     mosmm = geo.Point.fromlatlon(55 + (38.444/60), 37 + (31.804/60) )
