@@ -24,6 +24,10 @@ class RawTag:
         sect = RawSection(self.reader.pbf, self.pos + delta, size)
         return sect
 
+    @classmethod
+    def wiretypes(cls):
+        return { 0:'varint', 1:'int64', 2:'sequence', 5:'int32', 6:'blob' }
+
 class RawReader:
     def __init__(self):
         pass
@@ -125,6 +129,8 @@ class ProtobufReader:
 
     def handler(self, tag):
         if tag.fieldno not in self.pbstr:
+            if self.data != None and '$raw' in self.pbstr:
+                self.pbstr['$raw']['setter'](self.data, tag)
             return tag.reader.read_bywiretype(tag)
         self.counter[tag.fieldno] += 1
         tagstr = self.pbstr[tag.fieldno]
