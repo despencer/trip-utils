@@ -111,7 +111,7 @@ class StringTable:
     def __init__(self):
         self.table = []
 
-obschema = { 'start':'$discostat', 'structures':[
+obschema = { 'start':'header', 'structures':[
         { 'name':'header', 'factory': Map, 'fields':
     { 1 : { 'name':'version' }, 18:{'name':'creation', 'factory':unixtime},
     6:{ 'name':'sections', 'factory':Section, 'children':{     # map_section

@@ -16,13 +16,12 @@ def printnodes(indent, node):
 def main(fname):
     with open(fname, 'rb') as obfile:
         obfmap = obfdata.readobf(obfile)
-        print(obfmap.prettyprint(''))
-        ''' print('Map version {0}'.format(obfmap.version))
+        print('Map version {0}'.format(obfmap.version))
         for s in obfmap.sections:
             print('Section {0}'.format(s.name))
             for l in s.maplevels:
                 print('Map level {0}-{1} at {2}'.format(l.minzoom, l.maxzoom, l.bounds))
-                printnodes('    ', l.node) '''
+                printnodes('    ', l.node)
 
 if __name__ == '__main__':
     logging.basicConfig(filename='obinfo.log', filemode='w', level=logging.INFO)
