@@ -139,7 +139,6 @@ def latitod(y):
 
 def readobf(obfile):
     schema = Schema(obschema)
-#    schema.addformat({ 'structures':[ { 'name':'header', 'fields': { 6:{'print':4, 'children': { 5: { 'print':0 } } } } } ] } )
     reader = SchemaReader(obfile, schema)
     return reader.read()
 

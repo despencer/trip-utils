@@ -114,9 +114,6 @@ class ProtobufReader:
         self.pbf = pbf
         self.pbschema = pbschema
         self.pbstr = pbstr
-        self.indent = ''
-        self.printing = False
-        self.counter = Counter()
         self.data = data
 
     def read(self):
@@ -132,7 +129,6 @@ class ProtobufReader:
             if self.data != None and '$raw' in self.pbstr:
                 self.pbstr['$raw']['setter'](self.data, tag)
             return tag.reader.read_bywiretype(tag)
-        self.counter[tag.fieldno] += 1
         tagstr = self.pbstr[tag.fieldno]
         if tag.wiretype in (2, 6):
             return self.handleblob(tag, tagstr)
@@ -155,7 +151,6 @@ class ProtobufReader:
                     value = structure['factory']()
         if value != None:
             self.addattr(tagstr['name'], value)
-        self.handleprint(value, tag, tagstr)
         if 'children' in tagstr or 'structure' in tagstr:
             if 'children' in tagstr:
                 fields = tagstr['children']
@@ -163,11 +158,7 @@ class ProtobufReader:
                 fields = self.pbschema.getstructure(tagstr['structure'])['fields']
             section = tag.section(size, amount)
             child = ProtobufReader(self.pbf, self.pbschema, fields, data=value)
-            child.indent = self.indent + '    '
-            child.printing = self.printing
-            if 'print' in tagstr and tagstr['print'] != self.counter[tag.fieldno]-1:
-                child.printing = False
-            if (not self.printing) and ('lazy' in tagstr):
+            if 'lazy' in tagstr:
                 self.addattr(tagstr['lazy'], lambda : child.readsection(section))
             else:
                 child.readsection(section)
@@ -179,21 +170,7 @@ class ProtobufReader:
         if 'factory' in tagstr:
             obj = tagstr['factory'](value)
         self.addattr(tagstr['name'], obj)
-        self.handleprint(obj, tag, tagstr)
         return (size, False)
-
-    def handleprint(self, obj, tag, tagstr):
-        if not self.printing:
-            return
-        if 'print' in tagstr and tagstr['print'] != self.counter[tag.fieldno]-1:
-            return
-        if obj == None and 'default' in tagstr:
-            obj = tagstr['default']
-        if 'format' in tagstr:
-            reprstr = ('{0:'+tagstr['format']+'}').format(obj)
-            if 'name' in tagstr:
-                reprstr = '{0}={1}'.format(tagstr['name'], reprstr)
-            print('{0}{1}'.format(self.indent, reprstr))
 
     def addattr(self, name, value):
         chain = name.split('.')
