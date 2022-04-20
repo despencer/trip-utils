@@ -117,7 +117,8 @@ class MapNode:
 
 class MapBlock:
     def __init__(self):
-        pass
+        self.baseId = None
+        self.strings = None
 
 class StringTable:
     def __init__(self):
@@ -135,11 +136,11 @@ obschema = { 'start':'header', 'structures':[
     { 'name':'treenode', 'factory':MapNode, 'fields': {
         1:{'name':'ibounds.left.value', 'factory':ProtobufReader.readzigzag}, 2:{'name':'ibounds.right.value', 'factory':ProtobufReader.readzigzag},
         3:{'name':'ibounds.top.value', 'factory':ProtobufReader.readzigzag}, 4:{'name':'ibounds.bottom.value', 'factory':ProtobufReader.readzigzag},
-        5:{'name':'_blockoffset', '$raw':MapNode.readblockptr}, 7:{'name':'_children', 'lazy':'_childrenreader','structure':'treenode'} }},
-    { 'name':'mapblock', 'factory':MapBlock, 'fields':{15:{'name':'strings', 'structure':'$discostat'} } },
-    { 'name':'stringtable', 'factory':StringTable, 'fields':{1:{'name':'table', 'factory':ProtobufReader.readutf8}} } ] }
+        5:{'name':'_blockoffset', '$raw':MapNode.readblockptr}, 7:{'name':'_children', 'lazy':'_childrenreader','structure':'treenode'} }} ] }
 
-blockschema = { 'start':'$discostat', 'structures':[] }
+blockschema = { 'start':'mapblock', 'structures':[
+    { 'name':'mapblock', 'factory':MapBlock, 'fields':{10:{'name':'baseId'}, 15:{'name':'strings','structure':'stringtable'} } },
+    { 'name':'stringtable', 'factory':StringTable, 'fields':{1:{'name':'table', 'factory':ProtobufReader.readutf8} } }  ] }
 
 # longitude from integer to degrees
 def lonitod(x):
