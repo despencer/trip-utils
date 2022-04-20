@@ -1,7 +1,8 @@
+import logging
 import math
 from datetime import datetime, timedelta
 from schemareader import Schema, SchemaReader
-from pbreader import ProtobufReader
+from pbreader import ProtobufReader, RawReader
 import geo
 
 def unixtime(x):
@@ -80,8 +81,19 @@ class MapNode:
     def block(self):
         if self._blockreader != None:
             self._blockreader()
-            self._blockreader = None
         return self._block
+
+    def readblockptr(self, tag):
+        offset, size = tag.reader.read_fixed(4, 'big')
+        logging.debug('Tree node {0:X} limit {1:X}, tag {2:X}, value {3:X}, final {4:X}'.format(tag.reader.pos, tag.reader.limit, tag.pos, offset, tag.reader.pos+offset))
+        self._blockreader = lambda: self.readblock(tag.reader.pbf, offset + tag.reader.pos)
+        return (size, False)
+
+    def readblock(self, pbf, offset):
+        amount, size = RawReader.read_varint_frompbf(pbf, offset)
+        schema = Schema(blockschema)
+        reader = SchemaReader(pbf, schema)
+        self._block = reader.readsection(offset+size, amount)
 
     def adjustbounds(self, parent):
         self.ibounds.left.value += parent.left.value
@@ -105,7 +117,7 @@ class MapNode:
 
 class MapBlock:
     def __init__(self):
-        self.strings = None
+        pass
 
 class StringTable:
     def __init__(self):
@@ -123,10 +135,11 @@ obschema = { 'start':'header', 'structures':[
     { 'name':'treenode', 'factory':MapNode, 'fields': {
         1:{'name':'ibounds.left.value', 'factory':ProtobufReader.readzigzag}, 2:{'name':'ibounds.right.value', 'factory':ProtobufReader.readzigzag},
         3:{'name':'ibounds.top.value', 'factory':ProtobufReader.readzigzag}, 4:{'name':'ibounds.bottom.value', 'factory':ProtobufReader.readzigzag},
-        5:{'name':'_block', 'lazy':'_blockreader', 'structure':'mapblock'}, 7:{'name':'_children', 'lazy':'_childrenreader','structure':'treenode'} }},
-    { 'name':'mapblock', 'factory':MapBlock, 'fields':{15:{'name':'strings', 'structure':'stringtable'} } },
+        5:{'name':'_blockoffset', '$raw':MapNode.readblockptr}, 7:{'name':'_children', 'lazy':'_childrenreader','structure':'treenode'} }},
+    { 'name':'mapblock', 'factory':MapBlock, 'fields':{15:{'name':'strings', 'structure':'$discostat'} } },
     { 'name':'stringtable', 'factory':StringTable, 'fields':{1:{'name':'table', 'factory':ProtobufReader.readutf8}} } ] }
 
+blockschema = { 'start':'$discostat', 'structures':[] }
 
 # longitude from integer to degrees
 def lonitod(x):

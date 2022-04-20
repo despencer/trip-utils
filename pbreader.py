@@ -75,6 +75,14 @@ class RawReader:
             if (chunk & 0x80) == 0:
                 return (value, size)
 
+    @classmethod
+    def read_varint_frompbf(cls, pbf, offset):
+        reader = cls()
+        reader.pbf = pbf
+        reader.pos = offset
+        pbf.seek(offset)
+        return reader.read_varint()
+
     def read_fixed(self, size, byteorder):
         return ( int.from_bytes( self.pbf.read(size), byteorder), size)
 
@@ -130,6 +138,8 @@ class ProtobufReader:
                 self.pbstr['$raw']['setter'](self.data, tag)
             return tag.reader.read_bywiretype(tag)
         tagstr = self.pbstr[tag.fieldno]
+        if '$raw' in tagstr:
+            return tagstr['$raw'](self.data, tag)
         if tag.wiretype in (2, 6):
             return self.handleblob(tag, tagstr)
         else:
