@@ -46,9 +46,20 @@ Performed by the function *readMapObjectsBlock* for the map data (TreeNode::5)
 * [7]: children boxes (see TreeNode)
 
 ### MapBlock
-*   10: varint   baseId
-* [12]: seq     dataObjects
+*   10: baseId
+* [12]: dataObjects (see MapObject)
 *   15: StringTable
+
+### MapObject
+*   1: seq   coordinates
+*   2: seq
+*   4: seq
+*   6: seq
+*   7: seq   types
+*   8: seq
+*  10: seq
+*  12: varint
+
 
 ### StringTable
 *  [1]: string

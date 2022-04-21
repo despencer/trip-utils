@@ -118,7 +118,13 @@ class MapNode:
 class MapBlock:
     def __init__(self):
         self.baseId = None
+        self.objects = []
         self.strings = None
+
+class MapObject:
+    def __init__(self):
+        self.coordinates = None
+        self.types = None
 
 class StringTable:
     def __init__(self):
@@ -139,7 +145,11 @@ obschema = { 'start':'header', 'structures':[
         5:{'name':'_blockoffset', '$raw':MapNode.readblockptr}, 7:{'name':'_children', 'lazy':'_childrenreader','structure':'treenode'} }} ] }
 
 blockschema = { 'start':'mapblock', 'structures':[
-    { 'name':'mapblock', 'factory':MapBlock, 'fields':{10:{'name':'baseId'}, 15:{'name':'strings','structure':'stringtable'} } },
+    { 'name':'mapblock', 'factory':MapBlock, 'fields':{10:{'name':'baseId'}, 12:{'name':'objects', 'structure':'mapobject'},
+        15:{'name':'strings','structure':'stringtable'} } },
+    { 'name':'mapobject', 'factory':MapObject, 'fields': { 
+        1:{'name':'coordinates', 'factory':(lambda x:ProtobufReader.readvarintarray(x, ProtobufReader.readzigzag)) },
+        7:{'name':'types', 'factory':(lambda x:ProtobufReader.readvarintarray(x, (lambda x:x) )) }  }},
     { 'name':'stringtable', 'factory':StringTable, 'fields':{1:{'name':'table', 'factory':ProtobufReader.readutf8} } }  ] }
 
 # longitude from integer to degrees

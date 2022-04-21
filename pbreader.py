@@ -210,3 +210,21 @@ class ProtobufReader:
     @classmethod
     def readzigzag(cls, value):
         return (value>>1) ^ (-(value&1))
+
+    @classmethod
+    def readvarintarray(cls, data, convertor):
+        pos = 0
+        values = []
+        value = 0
+        size = 0
+        while True:
+            if pos >= len(data):
+                return values
+            chunk = data[pos]
+            pos += 1
+            value = ( ( chunk & 0x7F ) << ( size * 7) ) | value
+            size = size + 1
+            if (chunk & 0x80) == 0:
+                values.append(convertor(value))
+                size = 0
+                value = 0
