@@ -12,10 +12,12 @@ def main(fname, pfrom):
     with open(fname, 'rb') as obfile:
         obfmap = obfdata.readobf(obfile)
         nodes = obfmap.locatenodes(22, pfrom)
-        for n in nodes:
-            print(n.bounds, n.block.baseId)
+        for (n,s) in nodes:
+            print(n.bounds, n.block.baseId, s.name)
             for o in n.block.objects:
-                print('    Object', o.types)
+                print('    Object')
+                for t in o.types:
+                    print('       ', t, s.encodings[t+1].tag, s.encodings[t+1].value)
 
 if __name__ == '__main__':
     mosmm = geo.Point.fromlatlon(55 + (38.444/60), 37 + (31.804/60) )

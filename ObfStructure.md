@@ -13,7 +13,7 @@
 ### Section
 Loaded by *ObfMapSectionReader_P::read*
 *   2: name
-* [4]: encoding rules
+* [4]: encoding rules (see Attribute)
 * [5]: map levels (see MapLevel)
 
 The main entrance to the map data reader is the *ObfMapSectionReader_P::loadMapObjects* function.
@@ -63,3 +63,9 @@ Performed by the function *readMapObjectsBlock* for the map data (TreeNode::5)
 
 ### StringTable
 *  [1]: string
+
+### Attribute
+*  3:seq   tag
+*  5:seq   value
+*  9:varint  minzoom
+* 10:varint  type
