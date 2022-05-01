@@ -138,6 +138,7 @@ class MapBlock:
 
 class MapObject:
     def __init__(self):
+        self.id = None
         self.coordinates = None
         self.types = None
 
@@ -172,7 +173,8 @@ blockschema = { 'start':'mapblock', 'structures':[
         15:{'name':'strings','structure':'stringtable'} } },
     { 'name':'mapobject', 'factory':MapObject, 'fields': { 
         1:{'name':'coordinates', 'factory':(lambda x:ProtobufReader.readvarintarray(x, ProtobufReader.readzigzag)) },
-        7:{'name':'types', 'factory':(lambda x:ProtobufReader.readvarintarray(x, (lambda x:x) )) }  }},
+        7:{'name':'types', 'factory':(lambda x:ProtobufReader.readvarintarray(x, (lambda x:x) )) },
+        12:{'name':'id'}  }},
     { 'name':'stringtable', 'factory':StringTable, 'fields':{1:{'name':'table', 'factory':ProtobufReader.readutf8} } }  ] }
 
 # longitude from integer to degrees
