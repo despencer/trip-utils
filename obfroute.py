@@ -14,10 +14,10 @@ def main(fname, pfrom):
         nodes = obfmap.locatenodes(22, pfrom)
         for (n,s) in nodes:
             print(n.bounds, n.block.baseId, s.name)
-            for o in n.block.objects:
-                print('    Object')
-                for t in o.types:
-                    print('       ', t, s.encodings[t+1].tag, s.encodings[t+1].value)
+#            for o in n.block.objects:
+#                print('    Object')
+#                for t in o.types:
+#                    print('       ', t, s.encodings[t+1].tag, s.encodings[t+1].value)
 
 if __name__ == '__main__':
     mosmm = geo.Point.fromlatlon(55 + (38.444/60), 37 + (31.804/60) )

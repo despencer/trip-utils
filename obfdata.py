@@ -95,6 +95,7 @@ class MapNode:
         schema = Schema(blockschema)
         reader = SchemaReader(pbf, schema)
         self._block = reader.readsection(offset+size, amount)
+        self._block.adjustobjects(self.ibounds)
 
     def adjustbounds(self, parent):
         self.ibounds.left.value += parent.left.value
@@ -121,6 +122,19 @@ class MapBlock:
         self.baseId = None
         self.objects = []
         self.strings = None
+
+    def adjustobjects(self, nodebounds):
+        mask = ~31
+        left = nodebounds.left.value & mask
+        top = nodebounds.top.value & mask
+        for o in self.objects:
+            if o.coordinates != None:
+                coords = []
+                for i in range(0, len(o.coordinates), 2):
+                    left += o.coordinates[i] << 5
+                    top += o.coordinates[i+1] << 5
+                coords.append( geo.Point.fromlatlon(latitod(top), lonitod(left)) )
+                o.coordinates = coords
 
 class MapObject:
     def __init__(self):
