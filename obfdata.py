@@ -14,13 +14,14 @@ class Map:
         self.version = None
         self.sections = []
 
-    def locatenodes(self, zoom, point):
+    def locatenodes(self, zoom, bounds):
         nodes = []
         for s in self.sections:
            for ml in s.maplevels:
                 if ml.minzoom <= zoom and zoom <= ml.maxzoom:
-                     nodes.extend( ml.node.locatenodes(point, s) )
+                     nodes.extend( ml.node.locatenodes(bounds, s) )
         return nodes
+
 
 # A portion of a map, typically administrative region. original ObfMapSectionInfo. proto OsmAndMapIndex. Loader ObfMapSectionReader_P::read
 class Section:
@@ -107,14 +108,14 @@ class MapNode:
         self.bounds.right.value = lonitod(self.ibounds.right.value)
         self.bounds.bottom.value = latitod(self.ibounds.bottom.value)
 
-    def locatenodes(self, point, section):
-        if not self.bounds.isinside(point):
+    def locatenodes(self, bounds, section):
+        if not self.bounds.isintersects(bounds):
             return []
         if self.block != None:
             return [ (self,section) ]
         nodes = []
         for c in self.children:
-            nodes.extend( c.locatenodes(point,section) )
+            nodes.extend( c.locatenodes(bounds, section) )
         return nodes
 
 class MapBlock:

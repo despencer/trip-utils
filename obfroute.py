@@ -7,11 +7,14 @@ sys.path.insert(1, os.path.abspath('../geo'))
 import obfdata
 import geo
 
+def constructbounds(pfrom):
+   return pfrom.boundslatlon(0.5/60, 0.5/60)
+
 def main(fname, pfrom):
-    print('From {0}'.format(pfrom))
+    print('From {0} ({1})'.format(pfrom, constructbounds(pfrom)))
     with open(fname, 'rb') as obfile:
         obfmap = obfdata.readobf(obfile)
-        nodes = obfmap.locatenodes(22, pfrom)
+        nodes = obfmap.locatenodes(22, constructbounds(pfrom))
         for (n,s) in nodes:
             print(n.bounds, n.block.baseId, s.name)
 #            for o in n.block.objects:
