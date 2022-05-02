@@ -22,6 +22,11 @@ class Map:
                      nodes.extend( ml.node.locatenodes(bounds, s) )
         return nodes
 
+    def locateobjects(self, zoom, bounds):
+        objects = {}
+        for (node, section) in self.locatenodes(zoom, bounds):
+            node.block.locateobjects(objects, bounds, section)
+        return objects
 
 # A portion of a map, typically administrative region. original ObfMapSectionInfo. proto OsmAndMapIndex. Loader ObfMapSectionReader_P::read
 class Section:
@@ -137,11 +142,26 @@ class MapBlock:
                 coords.append( geo.Point.fromlatlon(latitod(top), lonitod(left)) )
                 o.coordinates = coords
 
+    def locateobjects(self, objects, bounds, section):
+        for o in self.objects:
+            if o.id not in objects and o.isinside(bounds):
+                objects[o.id] = o
+
+
 class MapObject:
     def __init__(self):
         self.id = None
         self.coordinates = None
         self.types = None
+
+    def isinside(self, bounds):
+        if self.coordinates == None:
+            return False
+        for c in self.coordinates:
+            if bounds.isinside(c):
+                return True
+        return False
+
 
 class StringTable:
     def __init__(self):
