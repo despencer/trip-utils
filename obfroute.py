@@ -8,7 +8,7 @@ import obfdata
 import geo
 
 def constructbounds(pfrom):
-   return pfrom.boundslatlon(0.5/60, 0.5/60)
+   return pfrom.boundslatlon(0.1/60, 0.1/60)
 
 def main(fname, pfrom):
     print('From {0} ({1})'.format(pfrom, constructbounds(pfrom)))
@@ -16,7 +16,7 @@ def main(fname, pfrom):
         obfmap = obfdata.readobf(obfile)
         objects = obfmap.locateobjects(22, constructbounds(pfrom))
         for o in objects.values():
-            print('    Object', o.id, o.coordinates)
+            print('    Object', o.id, o.coordinates, o.mapattr)
 
 if __name__ == '__main__':
     mosmm = geo.Point.fromlatlon(55 + (38.444/60), 37 + (31.804/60) )

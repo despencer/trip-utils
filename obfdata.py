@@ -139,20 +139,22 @@ class MapBlock:
                 for i in range(0, len(o.coordinates), 2):
                     left += o.coordinates[i] << 5
                     top += o.coordinates[i+1] << 5
-                coords.append( geo.Point.fromlatlon(latitod(top), lonitod(left)) )
+                    coords.append( geo.Point.fromlatlon(latitod(top), lonitod(left)) )
                 o.coordinates = coords
 
     def locateobjects(self, objects, bounds, section):
         for o in self.objects:
             if o.id not in objects and o.isinside(bounds):
-                objects[o.id] = o
-
+                o.expandattr(section)
+                if o.mapattr != None:
+                    objects[o.id] = o
 
 class MapObject:
     def __init__(self):
         self.id = None
         self.coordinates = None
         self.types = None
+        self.mapattr = None
 
     def isinside(self, bounds):
         if self.coordinates == None:
@@ -162,6 +164,11 @@ class MapObject:
                 return True
         return False
 
+    def expandattr(self, section):
+        if self.mapattr == None and self.types != None:
+           self.mapattr = []
+           for t in self.types:
+                self.mapattr.append(section.encodings[t+1])
 
 class StringTable:
     def __init__(self):
@@ -171,6 +178,9 @@ class Attribute:
     def __init__(self):
         self.tag = None
         self.value = None
+
+    def __repr__(self):
+        return '{0}={1}'.format(self.tag, self.value)
 
 obschema = { 'start':'header', 'structures':[
         { 'name':'header', 'factory': Map, 'fields':
