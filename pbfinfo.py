@@ -11,6 +11,7 @@ def main(fname):
         osmfile = pbfdata.readpbf(pbfile)
         for blob in osmfile.blobs:
             print('Blob', blob.type, 'size', blob.datasize)
+            print(blob.blob.prettyprint('    '))
 
 if __name__ == '__main__':
     logging.basicConfig(filename='pbinfo.log', filemode='w', level=logging.INFO)

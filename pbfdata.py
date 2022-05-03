@@ -10,9 +10,11 @@ class BlobHeader:
     def __init__(self):
         self.type = None
         self.datasize = None
+        self.blob = None
 
-headerschema = { 'start':'header', 'structures':[
+blobheaderschema = { 'start':'header', 'structures':[
         { 'name':'header', 'factory': BlobHeader, 'fields': {1:{'name':'type', 'factory':ProtobufReader.readutf8}, 3:{'name':'datasize'} } } ] }
+blobschema = { 'start':'$discostat', 'structures':[] }
 
 class OsmPbfReader:
     def __init__(self, pbfile):
@@ -27,9 +29,11 @@ class OsmPbfReader:
             if pos >= limit:
                 return
             headersize = filereader.readintat(pos, 4, 'big')
-            headerreader = SchemaReader(self.pbfile, Schema(headerschema))
+            headerreader = SchemaReader(self.pbfile, Schema(blobheaderschema))
             header = headerreader.readsection(pos+4, headersize)
             self.osmfile.blobs.append(header)
+            blobreader = SchemaReader(self.pbfile, Schema(blobschema))
+            header.blob = blobreader.readsection(pos+4+headersize, header.datasize)
             pos += 4 + headersize + header.datasize
 
 def readpbf(pbfile):
