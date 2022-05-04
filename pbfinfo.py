@@ -9,8 +9,8 @@ import pbfdata
 def main(fname):
     with open(fname, 'rb') as pbfile:
         osmfile = pbfdata.readpbf(pbfile)
-        for blob in osmfile.blobs:
-            print('Blob', blob.type, 'size', blob.datasize, 'raw', blob.blob.rawsize, blob.blob.blobdata)
+#        for blob in osmfile.blobs:
+#            print('Blob', blob.type, 'size', blob.datasize, 'raw', blob.blob.rawsize, blob.blob.blobdata)
 
 if __name__ == '__main__':
     logging.basicConfig(filename='pbinfo.log', filemode='w', level=logging.INFO)

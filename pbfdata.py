@@ -1,6 +1,7 @@
+import zlib
 from pbreader import ProtobufReader, RawReader
 from schemareader import Schema, SchemaReader
-from reader import FileReader
+from reader import FileReader, BytesReader
 
 class OsmFile:
     def __init__(self):
@@ -34,6 +35,7 @@ blobheaderschema = { 'start':'header', 'structures':[
         { 'name':'header', 'factory': BlobHeader, 'fields': {1:{'name':'type', 'factory':ProtobufReader.readutf8}, 3:{'name':'datasize'} } } ] }
 blobschema = { 'start':'blob', 'structures':[
         { 'name':'blob', 'factory':BlobBlock, 'fields': {2:{'name':'rawsize'},  3:{'$raw':BlobBlock.setdataptr} } } ] }
+headerschema = { 'start':'$discostat', 'structures':[] }
 
 class OsmPbfReader:
     def __init__(self, pbfile):
@@ -62,7 +64,12 @@ class OsmPbfReader:
             pos += 4 + headersize + header.datasize
 
     def readheader(self, headerblob):
-            pass
+        data = zlib.decompress(headerblob.blob.blobdata.read())
+        bytes = BytesReader(data)
+#        print('{0:X} {1:X}'.format(data[0], data[1]))
+#        print(bytes.read(2))
+        header = SchemaReader(bytes, Schema(headerschema)).read()
+        print(header.prettyprint('  '))
 
 def readpbf(pbfile):
     reader = OsmPbfReader(pbfile)
