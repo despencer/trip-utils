@@ -1,5 +1,14 @@
 import os
 
+class FileSection:
+    def __init__(self, pbf, pos, size):
+        self.pbf = pbf
+        self.pos = pos
+        self.size = size
+
+    def __repr__(self):
+       return 'Section at {0:X} of size {1:X}'.format(self.pos, self.size)
+
 class Reader:
     def __init__(self, datafile):
         self.datafile = datafile

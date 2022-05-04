@@ -3,15 +3,7 @@
 from collections import Counter
 import os
 import logging
-
-class RawSection:
-    def __init__(self, pbf, pos, size):
-        self.pbf = pbf
-        self.pos = pos
-        self.size = size
-
-    def __repr__(self):
-       return 'Section at {0:X} of size {1:X}'.format(self.pos, self.size)
+from reader import FileSection
 
 class RawTag:
     def __init__(self, reader, pos, fieldno, wiretype):
@@ -21,7 +13,7 @@ class RawTag:
         self.wiretype = wiretype
 
     def section(self, delta, size):
-        sect = RawSection(self.reader.pbf, self.pos + delta, size)
+        sect = FileSection(self.reader.pbf, self.pos + delta, size)
         return sect
 
     @classmethod

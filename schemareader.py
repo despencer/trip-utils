@@ -1,5 +1,6 @@
 from collections import Counter
-from pbreader import ProtobufReader, RawTag, RawSection
+from pbreader import ProtobufReader, RawTag
+from reader import FileSection
 
 class Schema:
     def __init__(self, schema):
@@ -43,7 +44,7 @@ class SchemaReader:
 
     def readsection(self, pos, size):
         reader = self.makereader()
-        reader.readsection(RawSection(self.datafile, pos, size))
+        reader.readsection(FileSection(self.datafile, pos, size))
         return reader.data
 
 class DiscoveryStat:

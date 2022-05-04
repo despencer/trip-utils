@@ -1,4 +1,4 @@
-from pbreader import ProtobufReader, RawReader, RawSection
+from pbreader import ProtobufReader, RawReader
 from schemareader import Schema, SchemaReader
 from reader import Reader
 
