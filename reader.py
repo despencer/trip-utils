@@ -9,7 +9,7 @@ class FileSection:
     def __repr__(self):
        return 'Section at {0:X} of size {1:X}'.format(self.pos, self.size)
 
-class Reader:
+class FileReader:
     def __init__(self, datafile):
         self.datafile = datafile
 

@@ -1,9 +1,10 @@
 from pbreader import ProtobufReader, RawReader
 from schemareader import Schema, SchemaReader
-from reader import Reader
+from reader import FileReader
 
 class OsmFile:
     def __init__(self):
+        self.header = None
         self.blobs = []
 
 class BlobHeader:
@@ -40,7 +41,7 @@ class OsmPbfReader:
         self.osmfile = OsmFile()
 
     def readblobs(self):
-        filereader = Reader(self.pbfile)
+        filereader = FileReader(self.pbfile)
         pos = 0
         limit = filereader.size()
         while True:
@@ -49,10 +50,19 @@ class OsmPbfReader:
             headersize = filereader.readintat(pos, 4, 'big')
             headerreader = SchemaReader(self.pbfile, Schema(blobheaderschema))
             header = headerreader.readsection(pos+4, headersize)
-            self.osmfile.blobs.append(header)
             blobreader = SchemaReader(self.pbfile, Schema(blobschema))
             header.blob = blobreader.readsection(pos+4+headersize, header.datasize)
+            if header.type == 'OSMHeader':
+                if self.osmfile.header == None:
+                    self.readheader(header)
+                else:
+                    print('Warning: second header detected')
+            else:
+                self.osmfile.blobs.append(header)
             pos += 4 + headersize + header.datasize
+
+    def readheader(self, headerblob):
+            pass
 
 def readpbf(pbfile):
     reader = OsmPbfReader(pbfile)
