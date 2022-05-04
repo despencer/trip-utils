@@ -2,11 +2,8 @@ import logging
 import math
 from datetime import datetime, timedelta
 from schemareader import Schema, SchemaReader
-from pbreader import ProtobufReader, RawReader
+from pbreader import ProtobufReader, RawReader, unixtime
 import geo
-
-def unixtime(x):
-    return datetime(1970,1,1)+timedelta(milliseconds=x)
 
 # Top level object. original ObfInfo, proto OsmAndStructure. Loader ObfReader_P::readInfo
 class Map:

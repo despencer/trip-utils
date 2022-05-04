@@ -1,9 +1,13 @@
 #!/usr/bin/python3
 
 from collections import Counter
+from datetime import datetime, timedelta
 import os
 import logging
 from reader import FileSection
+
+def unixtime(x):
+    return datetime(1970,1,1)+timedelta(milliseconds=x)
 
 class RawTag:
     def __init__(self, reader, pos, fieldno, wiretype):

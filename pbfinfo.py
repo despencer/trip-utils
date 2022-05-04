@@ -9,6 +9,9 @@ import pbfdata
 def main(fname):
     with open(fname, 'rb') as pbfile:
         osmfile = pbfdata.readpbf(pbfile)
+        print('Source', osmfile.header.source, osmfile.header.url)
+        print('Created', osmfile.header.creation)
+        print('Required features:', osmfile.header.required)
 #        for blob in osmfile.blobs:
 #            print('Blob', blob.type, 'size', blob.datasize, 'raw', blob.blob.rawsize, blob.blob.blobdata)
 
