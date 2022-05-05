@@ -35,3 +35,10 @@
 *  8: seq  lats (delta packs)
 *  9: seq  lons (delta packs)
 * 10: seq  keys and values
+
+### Way
+*  1: varint id
+*  2: seq  keys
+*  3: seq  vals
+*  4: seq
+*  8: seq  refs (delta packs)

@@ -14,8 +14,11 @@ def main(fname):
             blob = osmfile.blobs[i]
             block = blob.blob.readcontents()
             for p in block.primitives:
-                if p.densenodes != None:
-                    print(p.densenodes.keyvals)
+                for w in p.ways:
+                    print(w.id)
+                    print(w.keys)
+                    print(w.vals)
+                    print(w.refs)
 
 if __name__ == '__main__':
     logging.basicConfig(filename='pbroute.log', filemode='w', level=logging.INFO)

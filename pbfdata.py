@@ -73,6 +73,13 @@ class DenseNodes:
         self.lons = None
         self.keyvals = None
 
+class Way:
+    def __init__(self):
+        self.id = None
+        self.keys = None
+        self.vals = None
+        self.refs = None
+
 class StringTable:
     def __init__(self):
         self.strings = []
@@ -81,12 +88,18 @@ blockschema = { 'start':'datablock', 'structures':[
         { 'name':'datablock', 'factory':DataBlock, 'fields':
             {1:{'name':'strings', 'structure':'stringtable'}, 2:{'name':'primitives', 'structure':'datagroup'} } },
         { 'name':'stringtable', 'factory':StringTable, 'fields':{1:{'name':'strings', 'factory':ProtobufReader.readutf8}} },
-        { 'name':'datagroup', 'factory':DataGroup, 'fields':{2:{'name':'densenodes', 'structure':'densenodes'}} },
+        { 'name':'datagroup', 'factory':DataGroup, 'fields':
+            {2:{'name':'densenodes', 'structure':'densenodes'}, 3:{'name':'ways', 'structure':'way'}} },
         { 'name':'densenodes', 'factory':DenseNodes, 'fields':
             {1:{'name':'ids', 'factory':(lambda x: deltadecode(ProtobufReader.readvarintarray(x, ProtobufReader.readzigzag))) },
              8:{'name':'lats', 'factory':(lambda x: deltadecode(ProtobufReader.readvarintarray(x, ProtobufReader.readzigzag))) },
              9:{'name':'lons', 'factory':(lambda x: deltadecode(ProtobufReader.readvarintarray(x, ProtobufReader.readzigzag))) },
-             10:{'name':'keyvals', 'factory':(lambda x: ProtobufReader.readvarintarray(x, None)) }} } ] }
+             10:{'name':'keyvals', 'factory':(lambda x: ProtobufReader.readvarintarray(x, None)) }} },
+        { 'name':'way', 'factory':Way, 'fields':
+            {1:{'name':'id'},
+             2:{'name':'keys', 'factory':(lambda x: ProtobufReader.readvarintarray(x, None)) },
+             3:{'name':'vals', 'factory':(lambda x: ProtobufReader.readvarintarray(x, None)) },
+             8:{'name':'refs', 'factory':(lambda x: deltadecode(ProtobufReader.readvarintarray(x, ProtobufReader.readzigzag))) } }} ] }
 
 class OsmPbfReader:
     def __init__(self, pbfile):
