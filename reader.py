@@ -1,4 +1,17 @@
+from datetime import datetime, timedelta
 import os
+
+class Indicator:
+    def __init__(self, interval=2):
+        self.start = datetime.now()
+        self.interval = timedelta(seconds = interval)
+
+    def ready(self):
+        delta = datetime.now()-self.start
+        if delta >= self.interval:
+            self.start = datetime.now()
+            return True
+        return False
 
 class FileSection:
     def __init__(self, pbf, pos, size):

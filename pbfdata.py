@@ -2,6 +2,7 @@ import zlib
 from pbreader import ProtobufReader, RawReader, unixtime
 from schemareader import Schema, SchemaReader
 from reader import FileReader, BytesReader
+import geo
 
 class OsmFile:
     def __init__(self):
@@ -30,6 +31,10 @@ class BlobBlock:
         self._blockreader = lambda: self.readblock(tag.reader.pbf, offset + tag.reader.pos)
         return (size, False)
 
+    def readcontents(self):
+        data = zlib.decompress(self.blobdata.read())
+        bytes = BytesReader(data)
+        return SchemaReader(bytes, Schema(blockschema)).read()
 
 blobheaderschema = { 'start':'header', 'structures':[
         { 'name':'header', 'factory': BlobHeader, 'fields': {1:{'name':'type', 'factory':ProtobufReader.readutf8}, 3:{'name':'datasize'} } } ] }
@@ -47,6 +52,22 @@ headerschema = { 'start':'header', 'structures':[
         { 'name':'header', 'factory': OsmHeader, 'fields':
             {4:{'name':'required', 'factory':ProtobufReader.readutf8}, 16:{'name':'source', 'factory':ProtobufReader.readutf8},
             32:{'name':'creation', 'factory':unixtime}, 34:{'name':'url', 'factory':ProtobufReader.readutf8} } } ] }
+
+class DataBlock:
+    def __init__(self):
+        self.strings = None
+        self.primitives = []
+        self.granularity = 100
+        self.offset = geo.Point()
+
+class StringTable:
+    def __init__(self):
+        self.strings = []
+
+blockschema = { 'start':'datablock', 'structures':[
+        { 'name':'datablock', 'factory':DataBlock, 'fields':
+            {1:{'name':'strings', 'structure':'stringtable'}, 2:{'name':'primitives', 'structure':'$discostat'} } },
+        { 'name':'stringtable', 'factory':StringTable, 'fields':{1:{'name':'strings', 'factory':ProtobufReader.readutf8}} } ] }
 
 class OsmPbfReader:
     def __init__(self, pbfile):
