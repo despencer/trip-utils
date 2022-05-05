@@ -23,3 +23,15 @@
 ### DataBlock
 *   1:  string table
 * [2]:  group
+
+### DataGroup:
+*   2: seq  dense nodes
+* [3]: seq  ways
+* [4]: seq  relations
+
+### DenseNodes
+*  1: seq  ids (delta pack)
+*  5: seq
+*  8: seq  lats (delta packs)
+*  9: seq  lons (delta packs)
+* 10: seq  keys and values

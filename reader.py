@@ -1,6 +1,16 @@
 from datetime import datetime, timedelta
 import os
 
+def deltadecode(x):
+    if len(x) < 2:
+        return x
+    p = 0
+    y = []
+    for i in range(0, len(x)):
+        p += x[i]
+        y.append(p)
+    return y
+
 class Indicator:
     def __init__(self, interval=2):
         self.start = datetime.now()

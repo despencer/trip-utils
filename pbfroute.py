@@ -10,12 +10,12 @@ from reader import Indicator
 def main(fname):
     with open(fname, 'rb') as pbfile:
         osmfile = pbfdata.readpbf(pbfile)
-        for i, blob in enumerate(osmfile.blobs):
+        for i in [3, 12001, 12331]:
+            blob = osmfile.blobs[i]
             block = blob.blob.readcontents()
-            for j in range(0, len(block.strings.strings)):
-                print(j, block.strings.strings[j])
-            if i > 100:
-                break
+            for p in block.primitives:
+                if p.densenodes != None:
+                    print(p.densenodes.keyvals)
 
 if __name__ == '__main__':
     logging.basicConfig(filename='pbroute.log', filemode='w', level=logging.INFO)

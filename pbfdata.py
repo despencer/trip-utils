@@ -1,7 +1,7 @@
 import zlib
 from pbreader import ProtobufReader, RawReader, unixtime
 from schemareader import Schema, SchemaReader
-from reader import FileReader, BytesReader
+from reader import FileReader, BytesReader, deltadecode
 import geo
 
 class OsmFile:
@@ -60,14 +60,33 @@ class DataBlock:
         self.granularity = 100
         self.offset = geo.Point()
 
+class DataGroup:
+    def __init__(self):
+        self.densenodes = None
+        self.ways = []
+        self.relations = []
+
+class DenseNodes:
+    def __init__(self):
+        self.ids = None
+        self.lats = None
+        self.lons = None
+        self.keyvals = None
+
 class StringTable:
     def __init__(self):
         self.strings = []
 
 blockschema = { 'start':'datablock', 'structures':[
         { 'name':'datablock', 'factory':DataBlock, 'fields':
-            {1:{'name':'strings', 'structure':'stringtable'}, 2:{'name':'primitives', 'structure':'$discostat'} } },
-        { 'name':'stringtable', 'factory':StringTable, 'fields':{1:{'name':'strings', 'factory':ProtobufReader.readutf8}} } ] }
+            {1:{'name':'strings', 'structure':'stringtable'}, 2:{'name':'primitives', 'structure':'datagroup'} } },
+        { 'name':'stringtable', 'factory':StringTable, 'fields':{1:{'name':'strings', 'factory':ProtobufReader.readutf8}} },
+        { 'name':'datagroup', 'factory':DataGroup, 'fields':{2:{'name':'densenodes', 'structure':'densenodes'}} },
+        { 'name':'densenodes', 'factory':DenseNodes, 'fields':
+            {1:{'name':'ids', 'factory':(lambda x: deltadecode(ProtobufReader.readvarintarray(x, ProtobufReader.readzigzag))) },
+             8:{'name':'lats', 'factory':(lambda x: deltadecode(ProtobufReader.readvarintarray(x, ProtobufReader.readzigzag))) },
+             9:{'name':'lons', 'factory':(lambda x: deltadecode(ProtobufReader.readvarintarray(x, ProtobufReader.readzigzag))) },
+             10:{'name':'keyvals', 'factory':(lambda x: ProtobufReader.readvarintarray(x, None)) }} } ] }
 
 class OsmPbfReader:
     def __init__(self, pbfile):

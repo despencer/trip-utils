@@ -221,6 +221,6 @@ class ProtobufReader:
             value = ( ( chunk & 0x7F ) << ( size * 7) ) | value
             size = size + 1
             if (chunk & 0x80) == 0:
-                values.append(convertor(value))
+                values.append(value if convertor==None else convertor(value))
                 size = 0
                 value = 0
