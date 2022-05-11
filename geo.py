@@ -47,6 +47,15 @@ class Rectangle:
     def __repr__(self):
         return "{0} @ {1} - {2} @ {3}".format(self.left, self.top, self.right, self.bottom)
 
+    @classmethod
+    def fromltrb(self, left, top, right, bottom):
+        r = Rectangle()
+        r.left.value = left
+        r.top.value = top
+        r.right.value = right
+        r.bottom.value = bottom
+        return r
+
     def isinside(self, point):
         return self.left.value <= point.lon.value and point.lon.value <= self.right.value and self.bottom.value <= point.lat.value and point.lat.value <= self.top.value
 
