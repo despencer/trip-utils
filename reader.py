@@ -12,7 +12,7 @@ def deltadecode(x):
     return y
 
 class Indicator:
-    def __init__(self, interval=2):
+    def __init__(self, interval=10):
         self.start = datetime.now()
         self.interval = timedelta(seconds = interval)
 
