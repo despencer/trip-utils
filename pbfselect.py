@@ -8,24 +8,7 @@ sys.path.insert(1, os.path.abspath('../geo'))
 import pbfdata
 from reader import Indicator
 import geo
-
-class Node:
-    def __init__(self, id, lat, lon):
-        self.id = id
-        self.point = geo.Point.fromlatlon(lat, lon)
-
-    def __repr__(self):
-        return 'Node #{0} at {1}'.format(self.id, self.point)
-
-class Way:
-    def __init__(self, id):
-        self.id = id
-        self.nodes = []
-
-class BeyondNode:
-    def __init__(self, id):
-        self.id = id
-        self.ways = []
+from routing import Node, Way, BeyondNode
 
 class Selector:
     def __init__(self, osmfile, bounds):
@@ -71,6 +54,19 @@ class Selector:
                     beyond[refnode].ways.append( (way, len(way.nodes)) )
                     way.nodes.append( Node(0, 0, 0) )
 
+    def gettableids(self, table, keys):
+        ids = []
+        for i in range(0, len(table.strings)):
+            if table.strings[i] in keys:
+                ids.append(i)
+        return ids
+
+    def checkwaytags(self, way, keys):
+        for k in way.keys:
+            if k in keys:
+                return True
+        return False
+
     def locateways(self, locnodes):
         nodes = {}
         ways = []
@@ -80,14 +76,17 @@ class Selector:
             if indy.ready():
                 print('Selecting ways', i,'/',len(self.wayblocks))
             block = self.osmfile.blobs[iblock].blob.readcontents()
+            keys = self.gettableids(block.strings, ["highway"])
             for p in block.primitives:
                 for w in p.ways:
-                    for waynode in w.refs:
-                        if waynode in locnodes:
-                            way = Way(w.id)
-                            ways.append(way)
-                            self.addwaynodes(way, w.refs, nodes, locnodes, beyond)
-                            break
+                    if w.keys != None:
+                        for waynode in w.refs:
+                            if waynode in locnodes:
+                                if self.checkwaytags(w, keys):
+                                    way = Way(w.id)
+                                    ways.append(way)
+                                    self.addwaynodes(way, w.refs, nodes, locnodes, beyond)
+                                break
         return (ways, nodes, beyond)
 
     def updateways(self, ways, beyondref, node):
