@@ -1,12 +1,20 @@
 #!/usr/bin/python3
 
+import json
 import matplotlib.pyplot as plt
 
-def main(ways, fpic):
+def main(fways, fpic):
+    with open(fways) as jfile:
+        jways = json.load(jfile)['ways']
     fig = plt.figure()
     ax = plt.subplot(1, 1, 1)
-    ax.plot([54, 54, 55], [37, 38, 38], c='black')
-    ax.plot([52, 52, 53], [38, 39, 39], c='black')
+    for way in jways:
+        lat = []
+        lon = []
+        for p in way['points']:
+            lat.append(p['lat'])
+            lon.append(p['lon'])
+        ax.plot(lon, lat, c='black')
     fig.canvas.draw()
     fig.canvas.flush_events()
     fig.savefig(fpic)
