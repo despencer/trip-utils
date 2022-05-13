@@ -8,7 +8,7 @@ sys.path.insert(1, os.path.abspath('../geo'))
 import pbfdata
 from reader import Indicator
 import geo
-from routing import Node, Way, BeyondNode
+from routing import Node, Way, BeyondNode, Map, MapJson
 
 class Selector:
     def __init__(self, osmfile, bounds):
@@ -110,26 +110,19 @@ class Selector:
         locnodes = self.locatenodes()
         ways, nodes, beyond = self.locateways(locnodes)
         self.getbeyondnodes(ways, nodes, beyond)
-        return (ways, nodes)
+        return Way.fromdata(nodes, ways)
 
-def store(tname, ways):
+def store(tname, mapdata):
     print('Storing')
-    jways = []
-    for w in ways:
-        jw = { 'id':w.id, 'points':[] }
-        for n in w.nodes:
-            jpoint = { 'lat':n.point.lat.value, 'lon':n.point.lon.value }
-            jw['points'].append(jpoint)
-        jways.append(jw)
     with open(tname, 'w') as jfile:
-        json.dump( {'ways':jways }, jfile, indent = 2 )
+        json.dump( MapJson.save(mapdata), jfile, indent = 2 )
 
 def main(fname, tname):
     with open(fname, 'rb') as pbfile:
         osmfile = pbfdata.readpbf(pbfile)
         selector = Selector(osmfile, geo.Rectangle.fromltrb(37 + (31.704/60), 55 + (38.544/60), 37 + (31.904/60), 55 + (38.344/60) ))
-        ways, nodes = selector.locate()
-    store(tname, ways)
+        mapdata = selector.locate()
+    store(tname, mapdata)
 
 if __name__ == '__main__':
     logging.basicConfig(filename='pbroute.log', filemode='w', level=logging.INFO)
