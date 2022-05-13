@@ -56,7 +56,7 @@ class MapJson:
     @classmethod
     def savenodes(cls, md):
         jnodes = []
-        for n in md.nodes:
+        for n in md.nodes.values():
             jnodes.append(cls.savenode(n))
         return jnodes
 
@@ -74,7 +74,7 @@ class MapJson:
     @classmethod
     def loadway(cls, nodes, jway):
         way = Way(jway['id'])
-        for jn in jway['nodes']):
+        for jn in jway['nodes']:
             way.nodes.append(nodes[jn])
         return way
 

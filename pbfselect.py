@@ -110,7 +110,7 @@ class Selector:
         locnodes = self.locatenodes()
         ways, nodes, beyond = self.locateways(locnodes)
         self.getbeyondnodes(ways, nodes, beyond)
-        return Way.fromdata(nodes, ways)
+        return Map.fromdata(nodes, ways)
 
 def store(tname, mapdata):
     print('Storing')
