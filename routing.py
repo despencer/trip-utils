@@ -46,7 +46,7 @@ class MapJson:
     def loadnodes(cls, md, jnodes):
         for jn in jnodes:
             node = cls.loadnode(jn)
-            md[node.id] = node
+            md.nodes[node.id] = node
 
     @classmethod
     def loadways(cls, md, jways):

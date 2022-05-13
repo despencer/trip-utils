@@ -1,19 +1,23 @@
 #!/usr/bin/python3
 
+import sys
+import os
 import json
 import matplotlib.pyplot as plt
+sys.path.insert(1, os.path.abspath('../geo'))
+import routing
 
 def main(fways, fpic):
     with open(fways) as jfile:
-        jways = json.load(jfile)['ways']
+        mapdata = routing.MapJson.load(json.load(jfile))
     fig = plt.figure()
     ax = plt.subplot(1, 1, 1)
-    for way in jways:
+    for way in mapdata.ways:
         lat = []
         lon = []
-        for p in way['points']:
-            lat.append(p['lat'])
-            lon.append(p['lon'])
+        for n in way.nodes:
+            lat.append(n.point.lat.value)
+            lon.append(n.point.lon.value)
         ax.plot(lon, lat, c='black')
     fig.canvas.draw()
     fig.canvas.flush_events()

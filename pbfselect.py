@@ -74,7 +74,7 @@ class Selector:
         indy = Indicator()
         for i, iblock in enumerate(self.wayblocks):
             if indy.ready():
-                print('Selecting ways', i,'/',len(self.wayblocks))
+                print('Selecting ways', i,'/',len(self.wayblocks), 'ways found', len(ways))
             block = self.osmfile.blobs[iblock].blob.readcontents()
             keys = self.gettableids(block.strings, ["highway"])
             for p in block.primitives:
