@@ -12,6 +12,7 @@ class Way:
     def __init__(self, id):
         self.id = id
         self.nodes = []
+        self.tags = {}
 
 class BeyondNode:
     def __init__(self, id):
@@ -76,6 +77,8 @@ class MapJson:
         way = Way(jway['id'])
         for jn in jway['nodes']:
             way.nodes.append(nodes[jn])
+        for k, v in jway['tags'].items():
+            way.tags[k] = v
         return way
 
     @classmethod
@@ -84,8 +87,10 @@ class MapJson:
 
     @classmethod
     def saveway(cls, way):
-        jway = { 'id':way.id, 'nodes':[] }
+        jway = { 'id':way.id, 'nodes':[], 'tags':{} }
         for n in way.nodes:
             jway['nodes'].append(n.id)
+        for k, v in way.tags.items():
+            jway['tags'][k] = v
         return jway
 

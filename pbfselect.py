@@ -67,6 +67,10 @@ class Selector:
                 return True
         return False
 
+    def addwaytags(self, way, pbfway, table):
+        for i in range(0, len(pbfway.keys)):
+            way.tags[table.strings[pbfway.keys[i]]] = table.strings[pbfway.vals[i]]
+
     def locateways(self, locnodes):
         nodes = {}
         ways = []
@@ -86,6 +90,7 @@ class Selector:
                                     way = Way(w.id)
                                     ways.append(way)
                                     self.addwaynodes(way, w.refs, nodes, locnodes, beyond)
+                                    self.addwaytags(way, w, block.strings)
                                 break
         return (ways, nodes, beyond)
 
