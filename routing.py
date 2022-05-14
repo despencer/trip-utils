@@ -1,4 +1,13 @@
+import math
 import geo
+
+def pdistance(start, finish):
+    lat = finish.lat.value - start.lat.value
+    lon = finish.lon.value - start.lon.value
+    return math.sqrt( (lat*lat) + (lon*lon) )
+
+def distance(start, finish):
+    return pdistance(start.point, finish.point)
 
 class Node:
     def __init__(self, id, lat, lon):
@@ -141,7 +150,7 @@ class RoutingJson:
     @classmethod
     def loadedges(cls, routing, jedges):
         for je in jedges:
-            routing.edges.append(cls.loadedge(routing.nodes, routing.neighbors, jedge))
+            routing.edges.append(cls.loadedge(routing.nodes, routing.neighbors, je))
 
     @classmethod
     def saveedge(cls, edge):
@@ -152,7 +161,7 @@ class RoutingJson:
         edge = Edge.fromway(nodes[jedge['start']], nodes[jedge['finish']], jedge['cost'])
         cls.addneighbor(neighbors, edge.start, edge.finish, edge.cost)
         cls.addneighbor(neighbors, edge.finish, edge.start, edge.cost)
-        return edges
+        return edge
 
     @classmethod
     def addneighbor(cls, neighbors, node, neighbor, cost):

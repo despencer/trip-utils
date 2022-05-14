@@ -4,17 +4,11 @@ import sys
 import os
 import json
 import math
-import matplotlib.pyplot as plt
 sys.path.insert(1, os.path.abspath('../geo'))
 import routing
 
-def distance(start, finish):
-    lat = finish.point.lat.value - start.point.lat.value
-    lon = finish.point.lon.value - start.point.lon.value
-    return math.sqrt( (lat*lat) + (lon*lon) )
-
 def makeedge(start, finish, way):
-    return routing.Edge.fromway(start, finish, distance(start, finish))
+    return routing.Edge.fromway(start, finish, routing.distance(start, finish))
 
 def prepare(mapdata):
     rdata = routing.Routing()
