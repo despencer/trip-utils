@@ -45,11 +45,16 @@ class Edge:
         edge.cost = cost
         return edge
 
+class Neighbor:
+    def __init__(self, node, cost):
+        self.node = node
+        self.cost = cost
+
 class Routing:
     def __init__(self):
         self.nodes = {}
         self.edges = []
-        self.connections = {}
+        self.neighbors = {}
 
 class MapJson:
     @classmethod
@@ -120,6 +125,13 @@ class RoutingJson:
         return { 'nodes':MapJson.savenodes(routing), 'edges':cls.saveedges(routing) }
 
     @classmethod
+    def load(cls, jrouting):
+        routing = Routing()
+        MapJson.loadnodes(routing, jrouting['nodes'])
+        cls.loadedges(routing, jrouting['edges'])
+        return routing
+
+    @classmethod
     def saveedges(cls, routing):
         jedges = []
         for e in routing.edges:
@@ -127,5 +139,23 @@ class RoutingJson:
         return jedges
 
     @classmethod
+    def loadedges(cls, routing, jedges):
+        for je in jedges:
+            routing.edges.append(cls.loadedge(routing.nodes, routing.neighbors, jedge))
+
+    @classmethod
     def saveedge(cls, edge):
         return { 'start':edge.start.id, 'finish':edge.finish.id, 'cost':edge.cost }
+
+    @classmethod
+    def loadedge(cls, nodes, neighbors, jedge):
+        edge = Edge.fromway(nodes[jedge['start']], nodes[jedge['finish']], jedge['cost'])
+        cls.addneighbor(neighbors, edge.start, edge.finish, edge.cost)
+        cls.addneighbor(neighbors, edge.finish, edge.start, edge.cost)
+        return edges
+
+    @classmethod
+    def addneighbor(cls, neighbors, node, neighbor, cost):
+        if node not in neighbors:
+            neighbors[node] = []
+        neighbors[node].append( Neighbor(neighbor, cost) )
