@@ -31,6 +31,26 @@ class Map:
         map.ways = ways
         return map
 
+class Edge:
+    def __init__(self):
+        self.start = None
+        self.finish = None
+        self.cost = None
+
+    @classmethod
+    def fromway(cls, start, finish, cost):
+        edge = cls()
+        edge.start = start
+        edge.finish = finish
+        edge.cost = cost
+        return edge
+
+class Routing:
+    def __init__(self):
+        self.nodes = {}
+        self.edges = []
+        self.connections = {}
+
 class MapJson:
     @classmethod
     def load(cls, jmap):
@@ -94,3 +114,18 @@ class MapJson:
             jway['tags'][k] = v
         return jway
 
+class RoutingJson:
+    @classmethod
+    def save(cls, routing):
+        return { 'nodes':MapJson.savenodes(routing), 'edges':cls.saveedges(routing) }
+
+    @classmethod
+    def saveedges(cls, routing):
+        jedges = []
+        for e in routing.edges:
+            jedges.append(cls.saveedge(e))
+        return jedges
+
+    @classmethod
+    def saveedge(cls, edge):
+        return { 'start':edge.start.id, 'finish':edge.finish.id, 'cost':edge.cost }

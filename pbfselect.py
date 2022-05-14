@@ -115,6 +115,7 @@ class Selector:
         locnodes = self.locatenodes()
         ways, nodes, beyond = self.locateways(locnodes)
         self.getbeyondnodes(ways, nodes, beyond)
+        print('Total', len(nodes), 'nodes and', len(ways), 'ways')
         return Map.fromdata(nodes, ways)
 
 def store(tname, mapdata):
@@ -125,7 +126,7 @@ def store(tname, mapdata):
 def main(fname, tname):
     with open(fname, 'rb') as pbfile:
         osmfile = pbfdata.readpbf(pbfile)
-        selector = Selector(osmfile, geo.Rectangle.fromltrb(37 + (31.704/60), 55 + (38.544/60), 37 + (31.904/60), 55 + (38.344/60) ))
+        selector = Selector(osmfile, geo.Rectangle.fromltrb(37 + (18/60), 55 + (56/60), 37 + (50/60), 55 + (32/60) ))
         mapdata = selector.locate()
     store(tname, mapdata)
 

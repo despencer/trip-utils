@@ -8,17 +8,20 @@ sys.path.insert(1, os.path.abspath('../geo'))
 import routing
 
 def main(fways, fpic):
+    print('loading')
     with open(fways) as jfile:
         mapdata = routing.MapJson.load(json.load(jfile))
+    print('drawing')
     fig = plt.figure()
     ax = plt.subplot(1, 1, 1)
     for way in mapdata.ways:
-        lat = []
-        lon = []
-        for n in way.nodes:
-            lat.append(n.point.lat.value)
-            lon.append(n.point.lon.value)
-        ax.plot(lon, lat, c='black')
+        if way.tags['highway'] in ('primary', 'secondary', 'motorway'):
+            lat = []
+            lon = []
+            for n in way.nodes:
+                lat.append(n.point.lat.value)
+                lon.append(n.point.lon.value)
+            ax.plot(lon, lat, c='black')
     fig.canvas.draw()
     fig.canvas.flush_events()
     fig.savefig(fpic)
