@@ -65,6 +65,10 @@ class Routing:
         self.edges = []
         self.neighbors = {}
 
+class Route:
+    def __init__(self):
+        self.nodes = []
+
 class MapJson:
     @classmethod
     def load(cls, jmap):
