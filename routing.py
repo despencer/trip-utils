@@ -1,5 +1,6 @@
 import math
 import geo
+import logging
 from heapq import heappush, heappop
 
 def pdistance(start, finish):
@@ -79,22 +80,26 @@ class Router:
         self.finish = finish
 
     def route(self):
-        if start == finish:
+        logging.debug('Routing from %s(%s) to %s(%s), distance %s', self.start.id, self.start.point, self.finish.id, self.finish.point, distance(self.start, self.finish))
+        if self.start == self.finish:
             route = Route()
             route.nodes.extend([self.start, self.finish])
             return route
         self.frontier = []
-        heappush(self.frontier, RoutingNode(start, None, 0) ] )
+        heappush(self.frontier, RoutingNode(self.start, None, 0) )
         self.visited = { self.start : 0 }
         while len(self.frontier) > 0:
             top = heappop(self.frontier)
+#            logging.debug('Processing node %s, cost %s, dist %s, frontier %s', top.node.id, top.cost, distance(top.node, self.finish), len(self.frontier))
             for n in self.rdata.neighbors[top.node]:
                 if n.node == self.finish:
                     self.route = self.makeroute(top)
                     return self.route
-                if n.node not in self.visited or ( (top.cost+n.cost) < self.visited[n.node] )
-                    heappush(self.frontier, RoutingNode(n.node, top.node, top.cost+n.cost))
-                    visited[n.node] = top.cost+n.cost
+                cost = top.cost + n.cost + distance(n.node, self.finish)
+#                logging.debug('  checking node %s, cost %s', n.node.id, cost)
+                if n.node not in self.visited or cost < self.visited[n.node]:
+                    heappush(self.frontier, RoutingNode(n.node, top, cost))
+                    self.visited[n.node] = cost
         return None
 
     def makeroute(self, way):
@@ -116,6 +121,8 @@ class RoutingNode:
         return self.cost < other.cost
 
     def __eq__(self, other):
+        if other == None:
+            return False
         return self.cost == other.cost
 
 class MapJson:

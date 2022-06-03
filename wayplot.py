@@ -15,7 +15,7 @@ def main(fways, fpic):
     fig = plt.figure()
     ax = plt.subplot(1, 1, 1)
     for way in mapdata.ways:
-        if way.tags['highway'] in ('primary', 'secondary', 'motorway'):
+        if True: #way.tags['highway'] in ('trunk','trunk_link','primary', 'secondary', 'motorway'):
             lat = []
             lon = []
             for n in way.nodes:
@@ -28,4 +28,4 @@ def main(fways, fpic):
     plt.close()
 
 if __name__ == '__main__':
-    main('mm.ways', '/mnt/mobihome/temp/mmways.png')
+    main('mm-small.ways', '/mnt/mobihome/temp/mmways.png')

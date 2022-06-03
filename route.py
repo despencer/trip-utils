@@ -4,13 +4,15 @@ import sys
 import os
 import json
 import math
+import logging
 from datetime import datetime, timezone
 sys.path.insert(1, os.path.abspath('../geo'))
 import geo
 import routing
 
 mosmm = geo.Point.fromlatlon(55 + (38.444/60), 37 + (31.804/60) )
-target = geo.Point.fromlatlon(55 + (38.792/60), 37 + (31.763/60) )
+#target = geo.Point.fromlatlon(55 + (38.792/60), 37 + (31.763/60) )
+target = geo.Point.fromlatlon(55 + (38.404/60), 37 + (31.703/60) )
 
 def savetrack(fname, route):
     ts = datetime.now().astimezone(tz=timezone.utc)
@@ -38,10 +40,13 @@ def main(frouting, froute, pstart, pfinish):
     print('Locating start and finish')
     start = locatenode(rdata.nodes, pstart)
     finish = locatenode(rdata.nodes, pfinish)
-    route = routing.Route()
-    route.nodes.append(start)
-    route.nodes.append(finish)
-    savetrack(froute, route)
+    router = routing.Router(rdata, start, finish)
+    route = router.route()
+    if route == None:
+        print('Sorry, no route')
+    else:
+        savetrack(froute, route)
 
 if __name__ == '__main__':
+    logging.basicConfig(filename='route.log', filemode='w', level=logging.DEBUG)
     main('mm-small.routing', '/mnt/mobihome/temp/trial.plt', mosmm, target)
