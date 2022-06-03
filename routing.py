@@ -1,5 +1,6 @@
 import math
 import geo
+from heapq import heappush, heappop
 
 def pdistance(start, finish):
     lat = finish.lat.value - start.lat.value
@@ -60,6 +61,8 @@ class Neighbor:
         self.cost = cost
 
 class Routing:
+    ''' Routing graph with nodes, edges and neighbours 
+        neighbors - mapping between nodes and array of Neighbor objects '''
     def __init__(self):
         self.nodes = {}
         self.edges = []
@@ -68,6 +71,52 @@ class Routing:
 class Route:
     def __init__(self):
         self.nodes = []
+
+class Router:
+    def __init__(self, rdata, start, finish):
+        self.rdata = rdata
+        self.start = start
+        self.finish = finish
+
+    def route(self):
+        if start == finish:
+            route = Route()
+            route.nodes.extend([self.start, self.finish])
+            return route
+        self.frontier = []
+        heappush(self.frontier, RoutingNode(start, None, 0) ] )
+        self.visited = { self.start : 0 }
+        while len(self.frontier) > 0:
+            top = heappop(self.frontier)
+            for n in self.rdata.neighbors[top.node]:
+                if n.node == self.finish:
+                    self.route = self.makeroute(top)
+                    return self.route
+                if n.node not in self.visited or ( (top.cost+n.cost) < self.visited[n.node] )
+                    heappush(self.frontier, RoutingNode(n.node, top.node, top.cost+n.cost))
+                    visited[n.node] = top.cost+n.cost
+        return None
+
+    def makeroute(self, way):
+        route = Route()
+        while way != None:
+            route.nodes.insert(0, way.node)
+            way = way.source
+        route.nodes.append(self.finish)
+        return route
+
+class RoutingNode:
+    ''' Node for routing. It contain node reference, source reference and total cost (route and heuristic) '''
+    def __init__(self, node, source, cost):
+        self.node = node
+        self.source = source
+        self.cost = cost
+
+    def __lt__(self, other):
+        return self.cost < other.cost
+
+    def __eq__(self, other):
+        return self.cost == other.cost
 
 class MapJson:
     @classmethod
