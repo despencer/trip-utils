@@ -30,4 +30,4 @@ def main(fways, frouting):
         json.dump( routing.RoutingJson.save(rdata), jfile, indent = 2 )
 
 if __name__ == '__main__':
-    main('mm-small.ways', 'mm-small.routing')
+    main('mm.ways', 'mm.routing')

@@ -12,7 +12,7 @@ import routing
 
 mosmm = geo.Point.fromlatlon(55 + (38.444/60), 37 + (31.804/60) )
 #target = geo.Point.fromlatlon(55 + (38.792/60), 37 + (31.763/60) )
-target = geo.Point.fromlatlon(55 + (38.404/60), 37 + (31.703/60) )
+target = geo.Point.fromlatlon(55 + (45.77/60), 37 + (33.80/60) )
 
 def savetrack(fname, route):
     ts = datetime.now().astimezone(tz=timezone.utc)
@@ -49,4 +49,4 @@ def main(frouting, froute, pstart, pfinish):
 
 if __name__ == '__main__':
     logging.basicConfig(filename='route.log', filemode='w', level=logging.DEBUG)
-    main('mm-small.routing', '/mnt/mobihome/temp/trial.plt', mosmm, target)
+    main('mm.routing', '/mnt/mobihome/temp/trial.plt', mosmm, target)
