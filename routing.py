@@ -3,14 +3,6 @@ import geo
 import logging
 from heapq import heappush, heappop
 
-def pdistance(start, finish):
-    lat = finish.lat.value - start.lat.value
-    lon = finish.lon.value - start.lon.value
-    return math.sqrt( (lat*lat) + (lon*lon) )
-
-def distance(start, finish):
-    return pdistance(start.point, finish.point)
-
 class Node:
     def __init__(self, id, lat, lon):
         self.id = id
@@ -19,11 +11,21 @@ class Node:
     def __repr__(self):
         return 'Node #{0} at {1}'.format(self.id, self.point)
 
+    @classmethod
+    def distance(cls, node1, node2):
+        return geo.Point.distance(node1.point, node2.point)
+
 class Way:
     def __init__(self, id):
         self.id = id
         self.nodes = []
         self.tags = {}
+
+    def length(self):
+        dist = 0
+        for i in range (0, len(self.nodes)-1):
+            dist += Node.distance(self.nodes[i], self.nodes[i+1])
+        return dist
 
 class BeyondNode:
     def __init__(self, id):
