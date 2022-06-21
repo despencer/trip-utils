@@ -1,3 +1,5 @@
+from geopy import distance
+
 class Coordinate:
     def __init__(self):
         self.axis = 'lat'
@@ -34,6 +36,10 @@ class Point:
         bounds.right.value = self.lon.value + lon
         bounds.bottom.value = self.lat.value - lat
         return bounds
+
+    @classmethod
+    def distance(cls, pt1, pt2):
+        return distance.distance( (pt1.lat.value, pt1.lon.value), (pt2.lat.value, pt2.lon.value) ).m
 
 class Rectangle:
     def __init__(self):
