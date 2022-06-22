@@ -82,7 +82,7 @@ class Router:
         self.finish = finish
 
     def route(self):
-        logging.debug('Routing from %s(%s) to %s(%s), distance %s', self.start.id, self.start.point, self.finish.id, self.finish.point, distance(self.start, self.finish))
+        logging.debug('Routing from %s(%s) to %s(%s), distance %s', self.start.id, self.start.point, self.finish.id, self.finish.point, Node.distance(self.start, self.finish))
         if self.start == self.finish:
             route = Route()
             route.nodes.extend([self.start, self.finish])
@@ -97,7 +97,7 @@ class Router:
                 if n.node == self.finish:
                     self.route = self.makeroute(top)
                     return self.route
-                cost = top.cost + n.cost + distance(n.node, self.finish)
+                cost = top.cost + n.cost + Node.distance(n.node, self.finish)
 #                logging.debug('  checking node %s, cost %s', n.node.id, cost)
                 if n.node not in self.visited or cost < self.visited[n.node]:
                     heappush(self.frontier, RoutingNode(n.node, top, cost))
