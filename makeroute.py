@@ -10,10 +10,7 @@ from datetime import datetime, timezone
 sys.path.insert(1, os.path.abspath('../geo'))
 import geo
 import routing
-
-mosmm = geo.Point.fromlatlon(55 + (38.444/60), 37 + (31.804/60) )
-#target = geo.Point.fromlatlon(55 + (38.792/60), 37 + (31.763/60) )
-target = geo.Point.fromlatlon(55 + (45.77/60), 37 + (33.80/60) )
+import rprofile
 
 def loadtrack(nodes, fname):
     with open(fname, encoding='cp1251') as tfile:
@@ -51,6 +48,9 @@ def locatenode(nodes, point):
     return candidate
 
 def main(frouting, fwaypoints, froute):
+    fprofile = 'default.profile'
+    print('loading profile', fprofile)
+    profile = rprofile.load(fprofile)
     print('loading', frouting)
     with open(frouting) as jfile:
         rdata = routing.RoutingJson.load(json.load(jfile))
@@ -63,6 +63,7 @@ def main(frouting, fwaypoints, froute):
     route = routing.Route()
     for i in range(0, len(waypoints.nodes)-1):
         router = routing.Router(rdata, waypoints.nodes[i], waypoints.nodes[i+1])
+        router.profile = profile
         part = router.route()
         if part == None:
             print('sorry, no route')

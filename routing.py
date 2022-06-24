@@ -2,6 +2,7 @@ import math
 import geo
 import logging
 from heapq import heappush, heappop
+import rprofile
 
 class Node:
     def __init__(self, id, lat, lon):
@@ -80,6 +81,7 @@ class Router:
         self.rdata = rdata
         self.start = start
         self.finish = finish
+        self.profile = rprofile.Profile()
 
     def route(self):
         logging.debug('Routing from %s(%s) to %s(%s), distance %s', self.start.id, self.start.point, self.finish.id, self.finish.point, Node.distance(self.start, self.finish))
@@ -97,12 +99,15 @@ class Router:
                 if n.node == self.finish:
                     self.route = self.makeroute(top)
                     return self.route
-                cost = top.cost + n.cost + Node.distance(n.node, self.finish)
+                cost = top.cost + self.cost(n) + Node.distance(n.node, self.finish)
 #                logging.debug('  checking node %s, cost %s', n.node.id, cost)
                 if n.node not in self.visited or cost < self.visited[n.node]:
                     heappush(self.frontier, RoutingNode(n.node, top, cost))
                     self.visited[n.node] = cost
         return None
+
+    def cost(self, netnode):
+        return netnode.cost
 
     def makeroute(self, way):
         route = Route()
