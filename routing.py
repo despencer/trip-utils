@@ -50,6 +50,7 @@ class Edge:
         self.start = None
         self.finish = None
         self.cost = None
+        self.tags = {}
 
     @classmethod
     def fromway(cls, start, finish, cost):
@@ -221,13 +222,18 @@ class RoutingJson:
 
     @classmethod
     def saveedge(cls, edge):
-        return { 'start':edge.start.id, 'finish':edge.finish.id, 'cost':edge.cost }
+        jedge = { 'start':edge.start.id, 'finish':edge.finish.id, 'cost':edge.cost, 'tags':{} }
+        for k, v in edge.tags.items():
+            jedge['tags'][k] = v
+        return jedge
 
     @classmethod
     def loadedge(cls, nodes, neighbors, jedge):
         edge = Edge.fromway(nodes[jedge['start']], nodes[jedge['finish']], jedge['cost'])
         cls.addneighbor(neighbors, edge.start, edge.finish, edge.cost)
         cls.addneighbor(neighbors, edge.finish, edge.start, edge.cost)
+        for k, v in jedge['tags'].items():
+            edge.tags[k] = v
         return edge
 
     @classmethod

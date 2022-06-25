@@ -10,7 +10,9 @@ import routing
 from reader import Indicator
 
 def makeedge(start, finish, way):
-    return routing.Edge.fromway(start, finish, way.length())
+    edge = routing.Edge.fromway(start, finish, way.length())
+    edge.tags = way.tags
+    return edge
 
 def prepare(mapdata):
     rdata = routing.Routing()
