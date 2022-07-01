@@ -61,9 +61,9 @@ class Edge:
         return edge
 
 class Neighbor:
-    def __init__(self, node, cost):
+    def __init__(self, node, edge):
         self.node = node
-        self.cost = cost
+        self.edge = edge
 
 class Routing:
     ''' Routing graph with nodes, edges and neighbours 
@@ -100,15 +100,15 @@ class Router:
                 if n.node == self.finish:
                     self.route = self.makeroute(top)
                     return self.route
-                cost = top.cost + self.cost(n) + Node.distance(n.node, self.finish)
+                cost = top.cost + self.cost(n.edge) + Node.distance(n.node, self.finish)
 #                logging.debug('  checking node %s, cost %s', n.node.id, cost)
                 if n.node not in self.visited or cost < self.visited[n.node]:
                     heappush(self.frontier, RoutingNode(n.node, top, cost))
                     self.visited[n.node] = cost
         return None
 
-    def cost(self, netnode):
-        return netnode.cost
+    def cost(self, edge):
+        return edge.cost
 
     def makeroute(self, way):
         route = Route()
@@ -230,14 +230,14 @@ class RoutingJson:
     @classmethod
     def loadedge(cls, nodes, neighbors, jedge):
         edge = Edge.fromway(nodes[jedge['start']], nodes[jedge['finish']], jedge['cost'])
-        cls.addneighbor(neighbors, edge.start, edge.finish, edge.cost)
-        cls.addneighbor(neighbors, edge.finish, edge.start, edge.cost)
         for k, v in jedge['tags'].items():
             edge.tags[k] = v
+        cls.addneighbor(neighbors, edge.start, edge.finish, edge)
+        cls.addneighbor(neighbors, edge.finish, edge.start, edge)
         return edge
 
     @classmethod
-    def addneighbor(cls, neighbors, node, neighbor, cost):
+    def addneighbor(cls, neighbors, node, neighbor, edge):
         if node not in neighbors:
             neighbors[node] = []
-        neighbors[node].append( Neighbor(neighbor, cost) )
+        neighbors[node].append( Neighbor(neighbor, edge) )
