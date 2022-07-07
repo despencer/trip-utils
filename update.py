@@ -10,3 +10,4 @@ if __name__ == '__main__':
     mapdesc = geomap.Map.load(args.map)
     print("Updating {0}".format(mapdesc.name))
     mapview = mapdesc.makeview()
+    cache =  tiles.TileCache.init('tiles.json')

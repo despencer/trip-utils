@@ -1,3 +1,5 @@
+import os
+import json
 import math
 import geo
 
@@ -6,6 +8,15 @@ tilesize = 256
 class TileCache:
     def __init__(self):
         pass
+
+    @classmethod
+    def init(cls, filename):
+        with open(filename) as jfile:
+            jcache = json.load(jfile)
+        indexfile = os.path.expanduser(jcache['cache']['index'])
+        print("Index file", indexfile)
+        dir, file = os.path.split(indexfile)
+        print(dir, file)
 
 class View:
     def __init__(self):
