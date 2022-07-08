@@ -108,7 +108,12 @@ class Router:
         return None
 
     def cost(self, edge):
-        return edge.cost
+        cost = edge.cost
+        for k,v in edge.tags.items():
+            if k in self.profile.conditions.tags:
+                if v in self.profile.conditions.tags[k].values:
+                    cost *= self.profile.conditions.tags[k].values[v]
+        return cost
 
     def makeroute(self, way):
         route = Route()
