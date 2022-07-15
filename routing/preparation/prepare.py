@@ -1,11 +1,13 @@
 #!/usr/bin/python3
 
+from datetime import datetime, timedelta
 import sys
 import os
 import json
 import math
 import argparse
-sys.path.insert(1, os.path.abspath('../geo'))
+sys.path.insert(1, os.path.abspath('../../geo'))
+sys.path.insert(1, os.path.abspath('..'))
 import routing
 from reader import Indicator
 
@@ -27,14 +29,19 @@ def prepare(mapdata):
     return rdata
 
 def main(fways, frouting):
+    tstart = datetime.now()
     print('loading from', fways)
     with open(fways) as jfile:
         mapdata = routing.MapJson.load(json.load(jfile))
+    topen = datetime.now()
     print('preparing')
     rdata = prepare(mapdata)
+    tprepared = datetime.now()
     print('Storing to', frouting)
     with open(frouting, 'w') as jfile:
         json.dump( routing.RoutingJson.save(rdata), jfile, indent = 2 )
+    tfinish = datetime.now()
+    print('loading', topen-tstart, 'preparing', tprepared-topen, 'storing', tfinish-tprepared)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Prepares data for routing')
