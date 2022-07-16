@@ -83,6 +83,7 @@ class Router:
         self.start = start
         self.finish = finish
         self.profile = rprofile.Profile()
+        self.distances = {}
 
     def route(self):
         logging.debug('Routing from %s(%s) to %s(%s), distance %s', self.start.id, self.start.point, self.finish.id, self.finish.point, Node.distance(self.start, self.finish))
@@ -100,7 +101,7 @@ class Router:
                 if n.node == self.finish:
                     self.route = self.makeroute(top)
                     return self.route
-                cost = top.cost + self.cost(n.edge) + Node.distance(n.node, self.finish)
+                cost = top.cost + self.cost(n.edge) + self.getdistance(n.node)
 #                logging.debug('  checking node %s, cost %s', n.node.id, cost)
                 if n.node not in self.visited or cost < self.visited[n.node]:
                     heappush(self.frontier, RoutingNode(n.node, top, cost))
@@ -114,6 +115,11 @@ class Router:
                 if v in self.profile.conditions.tags[k].values:
                     cost *= self.profile.conditions.tags[k].values[v]
         return cost
+
+    def getdistance(self, node):
+        if node not in self.distances:
+            self.distances[node] = Node.distance(node, self.finish)
+        return self.distances[node]
 
     def makeroute(self, way):
         route = Route()
