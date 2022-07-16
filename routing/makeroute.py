@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from datetime import datetime, timedelta
 import sys
 import os
 import json
@@ -51,17 +52,21 @@ def main(frouting, fwaypoints, froute):
     fprofile = 'default.profile'
     print('loading profile', fprofile)
     profile = rprofile.load(fprofile)
+    tstart = datetime.now()
     print('loading', frouting)
     with open(frouting) as jfile:
         rdata = routing.RoutingJson.load(json.load(jfile))
+    tlocating = datetime.now()
     print('locating waypoints', fwaypoints)
     waypoints = loadtrack(rdata.nodes, fwaypoints)
     if len(waypoints.nodes) <= 1:
         print('waypoints should be at least 2')
         return
+    trouting = datetime.now()
     print('routing')
     route = routing.Route()
     for i in range(0, len(waypoints.nodes)-1):
+        print('Routing ', i, 'segment of', len(waypoints.nodes)-1)
         router = routing.Router(rdata, waypoints.nodes[i], waypoints.nodes[i+1])
         router.profile = profile
         part = router.route()
@@ -72,7 +77,9 @@ def main(frouting, fwaypoints, froute):
             route.nodes.extend(part.nodes)
         else:
             route.nodes.extend(part.nodes[1:])
+    tfinish = datetime.now()
     savetrack(froute, route)
+    print('loading', tlocating-tstart, 'locating', trouting-tlocating,'routing', tfinish-trouting)
 
 if __name__ == '__main__':
     logging.basicConfig(filename='route.log', filemode='w', level=logging.DEBUG)
