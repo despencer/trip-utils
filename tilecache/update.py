@@ -1,13 +1,18 @@
 #!/usr/bin/python3
 import argparse
-import geomap
-import tiles
+import sys
+import os
+sys.path.insert(1, os.path.abspath('../geo'))
+import geo
+
+def update(storage, bounds, level):
+    print('Checking storage ', args.storage)
+    print('Updating ', bounds, ' at ', level)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Show tracks info')
-    parser.add_argument('map', help='specifies map definition')
+    parser = argparse.ArgumentParser(description='Tile database updates')
+    parser.add_argument('storage', help='tile storage')
+    parser.add_argument('bounds', help='bounds to update')
+    parser.add_argument('level', help='bounds to update')
     args = parser.parse_args()
-    mapdesc = geomap.Map.load(args.map)
-    print("Updating {0}".format(mapdesc.name))
-    mapview = mapdesc.makeview()
-    cache =  tiles.TileCache.init('tiles.json')
+    update(args.storage, geo.Rectangle.parse(args.bounds), int(args.level))

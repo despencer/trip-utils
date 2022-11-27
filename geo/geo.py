@@ -12,6 +12,20 @@ class Coordinate:
             prefix = 'E' if self.value >= 0 else 'W'
         return "{0}{1:.3f}".format(prefix, abs(self.value))
 
+    @classmethod
+    def parse(cls, strvalue):
+        c = Coordinate()
+        strvalue = strvalue.strip()
+        c.value = float(strvalue[1:])
+        if strvalue[0] in ('N','S'):
+            if strvalue[0] == 'S':
+                c.value = -c.value
+        else:
+            c.axis = 'lon'
+            if strvalue[0] == 'W':
+                c.value = -c.value
+        return c
+
 class Point:
     def __init__(self):
         self.lat = Coordinate()
@@ -27,6 +41,11 @@ class Point:
         ret.lat.value = lat
         ret.lon.value = lon
         return ret
+
+    @classmethod
+    def parse(cls, strvalue):
+        points = strvalue.split('@')
+        return cls.fromlatlon(Coordinate.parse(points[0]).value, Coordinate.parse(points[1]).value)
 
     def boundslatlon(self, lat, lon):
         """ returns bounds around the point with the lat and lon margins"""
@@ -51,7 +70,7 @@ class Rectangle:
         self.right.axis = 'lon'
 
     def __repr__(self):
-        return "{0} @ {1} - {2} @ {3}".format(self.left, self.top, self.right, self.bottom)
+        return "{0} @ {1} - {2} @ {3}".format(self.top, self.left, self.bottom, self.right)
 
     @classmethod
     def fromltrb(self, left, top, right, bottom):
@@ -60,6 +79,18 @@ class Rectangle:
         r.top.value = top
         r.right.value = right
         r.bottom.value = bottom
+        return r
+
+    @classmethod
+    def parse(cls, strvalue):
+        r = Rectangle()
+        points = strvalue.split('-')
+        lt = Point.parse(points[0])
+        rb = Point.parse(points[1])
+        r.left.value = lt.lon.value
+        r.top.value = lt.lat.value
+        r.right.value = rb.lon.value
+        r.bottom.value = rb.lat.value
         return r
 
     def isinside(self, point):
