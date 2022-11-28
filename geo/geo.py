@@ -81,6 +81,15 @@ class Rectangle:
         r.bottom.value = bottom
         return r
 
+    def corners(self):
+        lt = Point()
+        rb = Point()
+        lt.lon.value = self.left.value
+        lt.lat.value = self.top.value
+        rb.lon.value = self.right.value
+        rb.lat.value = self.bottom.value
+        return [ lt, rb ]
+
     @classmethod
     def parse(cls, strvalue):
         r = Rectangle()
