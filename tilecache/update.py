@@ -3,11 +3,14 @@ import argparse
 import sys
 import os
 sys.path.insert(1, os.path.abspath('../geo'))
+sys.path.insert(1, os.path.abspath('../../pydma'))
 import geo
 import geomap
+import tiles
 
 def update(storage, bounds, level):
     print('Checking storage ', args.storage)
+    cache = tiles.TileCache.init(args.storage)
     print('Updating ', bounds, ' at ', level)
     tilebounds = geomap.MapBounds.frombounds(bounds, geomap.simplemercator).mapcorners(lambda p: geomap.totilepoint(p,level))
     tilebounds = tilebounds.mapcorners(geomap.gettileno)
