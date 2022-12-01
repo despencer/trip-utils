@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import argparse
+import logging
 import sys
 import os
 sys.path.insert(1, os.path.abspath('../geo'))
@@ -10,16 +11,17 @@ import tiles
 
 def update(storage, bounds, level):
     print('Checking storage ', args.storage)
-    cache = tiles.TileCache.init(args.storage)
-    print('Updating ', bounds, ' at ', level)
-    tilebounds = geomap.MapBounds.frombounds(bounds, geomap.simplemercator).mapcorners(lambda p: geomap.totilepoint(p,level))
-    tilebounds = tilebounds.mapcorners(geomap.gettileno)
-    print(tilebounds)
-    for x in range(tilebounds.left, tilebounds.right+1):
-        for y in range(tilebounds.top, tilebounds.bottom+1):
-            print(x, y)
+    with tiles.TileCache(args.storage) as cache:
+        print('Updating ', bounds, ' at ', level)
+        tilebounds = geomap.MapBounds.frombounds(bounds, geomap.simplemercator).mapcorners(lambda p: geomap.totilepoint(p,level))
+        tilebounds = tilebounds.mapcorners(geomap.gettileno)
+        print(tilebounds)
+        for x in range(tilebounds.left, tilebounds.right+1):
+            for y in range(tilebounds.top, tilebounds.bottom+1):
+                print(x, y)
 
 if __name__ == '__main__':
+    logging.basicConfig(filename='update.log', filemode='w', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Tile database updates')
     parser.add_argument('storage', help='tile storage')
     parser.add_argument('bounds', help='bounds to update')
