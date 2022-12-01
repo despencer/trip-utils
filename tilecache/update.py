@@ -19,7 +19,8 @@ def update(storage, bounds, level):
         view = cache.openview('osm')
         for x in range(tilebounds.left, tilebounds.right+1):
             for y in range(tilebounds.top, tilebounds.bottom+1):
-                print(x, y)
+                print('Checking ', x, y)
+                view.check(x, y, level)
 
 if __name__ == '__main__':
     logging.basicConfig(filename='update.log', filemode='w', level=logging.DEBUG)
