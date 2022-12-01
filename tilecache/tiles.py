@@ -5,6 +5,7 @@ import geo
 import dbmeta
 import providers
 import datetime
+import logging
 
 cachedir = "~/.tiles"
 
@@ -32,6 +33,19 @@ class TileVersion:
         version.version_parameter = parameter
         return dbmeta.DbMeta.insert(db, cls, version)
 
+    @classmethod
+    def getlast(cls, db, provider):
+        return dbmeta.DbMeta.selectone(db, cls,
+           ''' SELECT v.id, v.provider, v.version_no, v.version_parameter FROM tile_version v, tile_provider p
+                WHERE v.provider = p.id AND p.name = ? ORDER BY v.version_no DESC''', provider)
+
+class TileView:
+    def __init__(self, cache, version, provider):
+        self.cache = cache
+        self.version = version
+        self.provider = provider
+        logging.info('TileView version %s/%s created', version.version_no, version.version_parameter)
+
 class TileCache:
     def __init__(self, cachename):
         self.cachename = cachename
@@ -53,10 +67,8 @@ class TileCache:
         self.dbrun = None
         self.db = None
 
-#    def openview(self, provider):
-#        
-
-#    def check(self, x, y, zoom, provider):
+    def openview(self, provider):
+        return TileView(self, TileVersion.getlast(self.dbrun, provider), self.providers[provider])
 
     def __enter__(self):
         self.open()
