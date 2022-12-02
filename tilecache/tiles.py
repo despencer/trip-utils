@@ -6,8 +6,27 @@ import dbmeta
 import providers
 import datetime
 import logging
+import requests
+from urllib.parse import urlparse
 
 cachedir = "~/.tiles"
+
+class Loader:
+    def __init__(self, url):
+        self.url = url
+        self.data = None
+
+    def load(self):
+        host = urlparse(self.url).hostname
+        headers = { 'Host':host, 'User-Agent':'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0',
+            'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language':'en-US,en;q=0.5' }
+        response = requests.request('GET', self.url, headers=headers)
+        logging.info('Status code %s', response.status_code)
+        if response.status_code == 200:
+            self.data = response.content
+
+    def ok(self):
+        return self.data != None
 
 class TileProvider:
     def __init__(self):
@@ -60,7 +79,27 @@ class TileView:
     def check(self, x, y, zoom):
         tile = Tile.getbypos(self.cache.dbrun, self.version.provider, x, y, zoom)
         if tile == None or tile.version != self.version.id:
-            logging.info('Tile %s@%s at %s is old, requesting', x, y, zoom)
+            url = self.provider.geturl(x, y, zoom, self.version.version_parameter)
+            logging.info('Tile %s@%s at %s is old, requesting %s', x, y, zoom, url)
+            loader = Loader(url)
+            loader.load()
+            if loader.ok():
+                self.store(loader.data, x, y, zoom)
+
+    def store(self, data, x, y, zoom):
+        newtile = Tile()
+        newtile.version = self.version.id
+        newtile.x = x
+        newtile.y = y
+        newtile.zoom = zoom
+        newtile.download = dbmeta.DbMeta.now()
+        self.cache.tiles.seek(0, os.SEEK_END)
+        newtile.offset = self.cache.tiles.tell()
+        newtile.size = len(data)
+        self.cache.tiles.write(data)
+        dbmeta.DbMeta.insert(self.cache.dbrun, Tile, newtile)
+        self.cache.dbrun.finish()
+        logging.info('Tile %s@%s at %s written at %s size %s', newtile.x, newtile.y, newtile.zoom, newtile.offset, newtile.size)
 
 class TileCache:
     def __init__(self, cachename):
@@ -72,16 +111,20 @@ class TileCache:
         if not os.path.exists(tpath):
             os.makedirs(tpath)
         indexfile = os.path.join(tpath, self.cachename + ".tindex")
+        imagefile = os.path.join(tpath, self.cachename + ".tiles")
         self.db = dbmeta.Db(indexfile)
         self.db.open()
         self.dbrun = self.db.run()
         self.initdb()
+        self.tiles = open(imagefile, 'ab')
 
     def close(self):
         self.dbrun.finish()
         self.db.close()
         self.dbrun = None
         self.db = None
+        self.tiles.close()
+        self.tiles = None
 
     def openview(self, provider):
         return TileView(self, TileVersion.getlast(self.dbrun, provider), self.providers[provider])
