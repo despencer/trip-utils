@@ -129,6 +129,11 @@ class TileCache:
     def openview(self, provider):
         return TileView(self, TileVersion.getlast(self.dbrun, provider), self.providers[provider])
 
+    def addversion(self, provider, parameter):
+        version = TileVersion.getlast(self.dbrun, provider)
+        TileVersion.create(self.dbrun, version.provider, version.version_no+1, parameter )
+        self.dbrun.finish()
+
     def __enter__(self):
         self.open()
         return self
