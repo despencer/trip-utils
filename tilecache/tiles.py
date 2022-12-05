@@ -68,6 +68,22 @@ class Tile:
                  WHERE t.version = v.id AND t.zoom = ? AND t.x = ? AND t.y = ? AND v.provider = ? ORDER BY v.version_no DESC''',
             zoom, x, y, provider)
 
+    @classmethod
+    def create(cls, db, versionid, x, y, zoom, offset, size):
+        newtile = Tile()
+        newtile.version = versionid
+        newtile.x = x
+        newtile.y = y
+        newtile.zoom = zoom
+        newtile.download = dbmeta.DbMeta.now()
+        newtile.offset = offset
+        newtile.size = size
+        dbmeta.DbMeta.insert(db, Tile, newtile)
+        db.finish()
+
+    @classmethod
+    def createsame(cls, db, versionid, tile):
+        cls.create(db, versionid, tile.x, tile.y, tile.zoom, tile.offset, tile.size)
 
 class TileView:
     def __init__(self, cache, version, provider):
@@ -84,22 +100,25 @@ class TileView:
             loader = Loader(url)
             loader.load()
             if loader.ok():
-                self.store(loader.data, x, y, zoom)
+                same = False
+                if tile != None:
+                    self.cache.tiles.seek(tile.offset)
+                    olddata = self.cache.tiles.read(tile.size)
+                    same = self.compare(loader.data, olddata)
+                if same:
+                    logging.info('Tile %s@%s at %s using %s size %s', x, y, zoom, tile.offset, tile.size)
+                    Tile.createsame(self.cache.dbrun, self.version.id, tile)
+                else:
+                    self.cache.tiles.seek(0, os.SEEK_END)
+                    offset = self.cache.tiles.tell()
+                    size = len(loader.data)
+                    self.cache.tiles.write(loader.data)
+                    logging.info('Tile %s@%s at %s written at %s size %s', x, y, zoom, offset, size)
+                    Tile.create(self.cache.dbrun, self.version.id, x, y, zoom, offset, size)
 
-    def store(self, data, x, y, zoom):
-        newtile = Tile()
-        newtile.version = self.version.id
-        newtile.x = x
-        newtile.y = y
-        newtile.zoom = zoom
-        newtile.download = dbmeta.DbMeta.now()
-        self.cache.tiles.seek(0, os.SEEK_END)
-        newtile.offset = self.cache.tiles.tell()
-        newtile.size = len(data)
-        self.cache.tiles.write(data)
-        dbmeta.DbMeta.insert(self.cache.dbrun, Tile, newtile)
-        self.cache.dbrun.finish()
-        logging.info('Tile %s@%s at %s written at %s size %s', newtile.x, newtile.y, newtile.zoom, newtile.offset, newtile.size)
+    def compare(self, newdata, olddata):
+        return newdata == olddata
+
 
 class TileCache:
     def __init__(self, cachename):
@@ -116,7 +135,7 @@ class TileCache:
         self.db.open()
         self.dbrun = self.db.run()
         self.initdb()
-        self.tiles = open(imagefile, 'ab')
+        self.tiles = open(imagefile, 'a+b')
 
     def close(self):
         self.dbrun.finish()
