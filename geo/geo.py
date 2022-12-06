@@ -1,5 +1,11 @@
 from geopy import distance
 
+def findmulti(string, values):
+    for c in values:
+        if string.find(c) >= 0:
+            return string.find(c)
+    return -1
+
 class Coordinate:
     def __init__(self):
         self.axis = 'lat'
@@ -16,15 +22,23 @@ class Coordinate:
     def parse(cls, strvalue):
         c = Coordinate()
         strvalue = strvalue.strip()
-        c.value = float(strvalue[1:])
-        if strvalue[0] in ('N','S'):
-            if strvalue[0] == 'S':
-                c.value = -c.value
+        if strvalue[0] in ['N', 'S', 'E', 'W']:
+            c.value = float(strvalue[1:])
+            c.setaxis(strvalue[0])
         else:
-            c.axis = 'lon'
-            if strvalue[0] == 'W':
-                c.value = -c.value
+            ind = findmulti(strvalue, ['N', 'S', 'E', 'W'])
+            c.value = int(strvalue[:ind]) + float(strvalue[ind+1:])/60
+            c.setaxis(strvalue[ind])
         return c
+
+    def setaxis(self, nsew):
+        if nsew in ('N','S'):
+            if nsew == 'S':
+                self.value = -self.value
+        else:
+            self.axis = 'lon'
+            if nsew == 'W':
+                self.value = -self.value
 
 class Point:
     def __init__(self):

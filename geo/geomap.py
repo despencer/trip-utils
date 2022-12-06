@@ -9,6 +9,14 @@ class MapPoint:
         self.x = x
         self.y = y
 
+    def __repr__(self):
+        return '{0}x{1}'.format(self.x, self.y)
+
+    @classmethod
+    def parse(cls, strvalue):
+        pts = strvalue.split('x')
+        return cls(int(pts[0]), int(pts[1]))
+
 class MapBounds:
     ''' right and bottom points are exclusive '''
     def __init__(self):
