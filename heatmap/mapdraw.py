@@ -22,3 +22,11 @@ class Map:
         mapspec.provider = jmap['source']['provider']
         mapspec.zoom = int(jmap['source']['zoom'])
         return mapspec
+
+    def gettilebounds(self, proj):
+        lt = geomap.totilepoint(proj.toprojection(self.center), self.zoom)
+        lt.x -= int(self.size.x / 2)
+        lt.y -= int(self.size.y / 2)
+        return geomap.MapBounds.fromltrb(lt.x, lt.y, lt.x+self.size.x-1, lt.y+self.size.y-1)
+
+

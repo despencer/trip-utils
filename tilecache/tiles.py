@@ -2,6 +2,7 @@ import os
 import json
 import math
 import geo
+import geomap
 import dbmeta
 import providers
 import datetime
@@ -95,6 +96,7 @@ class TileView:
     def check(self, x, y, zoom):
         tile = Tile.getbypos(self.cache.dbrun, self.version.provider, x, y, zoom)
         if tile == None or tile.version != self.version.id:
+            print('Obtaining ', x, y)
             url = self.provider.geturl(x, y, zoom, self.version.version_parameter)
             logging.info('Tile %s@%s at %s is old, requesting %s', x, y, zoom, url)
             loader = Loader(url)
@@ -122,6 +124,12 @@ class TileView:
     def projection(self):
         return self.provider.projection
 
+    def updatetiles(self, tilebounds, level):
+        tilebounds = tilebounds.mapcorners(geomap.gettileno)
+        print('Updating', tilebounds)
+        for x in range(tilebounds.left, tilebounds.right+1):
+            for y in range(tilebounds.top, tilebounds.bottom+1):
+                self.check(x, y, level)
 
 class TileCache:
     def __init__(self, cachename):

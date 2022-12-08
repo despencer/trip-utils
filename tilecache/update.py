@@ -15,12 +15,7 @@ def update(storage, bounds, level):
         print('Updating ', bounds, ' at ', level)
         view = cache.openview('osm')
         tilebounds = geomap.MapBounds.frombounds(bounds, view.projection().toprojection).mapcorners(lambda p: geomap.totilepoint(p,level))
-        tilebounds = tilebounds.mapcorners(geomap.gettileno)
-        print(tilebounds)
-        for x in range(tilebounds.left, tilebounds.right+1):
-            for y in range(tilebounds.top, tilebounds.bottom+1):
-                print('Checking ', x, y)
-                view.check(x, y, level)
+        view.updatetiles(tilebounds, level)
 
 if __name__ == '__main__':
     logging.basicConfig(filename='update.log', filemode='w', level=logging.DEBUG)
