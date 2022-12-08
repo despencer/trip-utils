@@ -32,6 +32,7 @@ class MapBounds:
         m.top = top
         m.right = right
         m.bottom = bottom
+        return m
 
     @classmethod
     def frombounds(cls, bounds, projection):

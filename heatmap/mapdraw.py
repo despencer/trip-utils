@@ -18,4 +18,7 @@ class Map:
         mapspec = Map()
         mapspec.center = geo.Point.parse(jmap['center'])
         mapspec.size = geomap.MapPoint.parse(jmap['size'])
+        mapspec.storage = jmap['source']['storage']
+        mapspec.provider = jmap['source']['provider']
+        mapspec.zoom = int(jmap['source']['zoom'])
         return mapspec

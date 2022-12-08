@@ -2,6 +2,7 @@
  "map":
   {
     "center":"55N38 @ 37E32",
-    "size":"1920x1200"
+    "size":"1920x1200",
+    "source": { "storage":"msk", "provider":"osm", "zoom":13 }
   }
 }
