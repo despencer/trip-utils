@@ -13,10 +13,10 @@ def update(storage, bounds, level):
     print('Checking storage ', args.storage)
     with tiles.TileCache(args.storage) as cache:
         print('Updating ', bounds, ' at ', level)
-        tilebounds = geomap.MapBounds.frombounds(bounds, geomap.simplemercator).mapcorners(lambda p: geomap.totilepoint(p,level))
+        view = cache.openview('osm')
+        tilebounds = geomap.MapBounds.frombounds(bounds, view.projection().toprojection).mapcorners(lambda p: geomap.totilepoint(p,level))
         tilebounds = tilebounds.mapcorners(geomap.gettileno)
         print(tilebounds)
-        view = cache.openview('osm')
         for x in range(tilebounds.left, tilebounds.right+1):
             for y in range(tilebounds.top, tilebounds.bottom+1):
                 print('Checking ', x, y)

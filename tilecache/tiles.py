@@ -119,6 +119,9 @@ class TileView:
     def compare(self, newdata, olddata):
         return newdata == olddata
 
+    def projection(self):
+        return self.provider.projection
+
 
 class TileCache:
     def __init__(self, cachename):

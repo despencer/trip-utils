@@ -57,13 +57,16 @@ class MapBounds:
     def __repr__(self):
         return "{0}x{1} - {2}x{3}".format(self.left, self.top, self.right, self.bottom)
 
+class SimpleMercator:
+    def __init__(self):
+        pass
 
-def simplemercator(point):
-    ''' This is a Mercator projection. It transforms lat-lon to (2*PI x 2*PI) right-top square '''
-    lat = point.lat.value * math.pi / 180
-    lon = point.lon.value * math.pi / 180
-    sin = math.sin(lat)
-    return MapPoint( lon, 0.5 * math.log( (1+sin) / (1-sin) ) )
+    def toprojection(self, point):
+        ''' This is a Mercator projection. It transforms lat-lon to (2*PI x 2*PI) right-top square '''
+        lat = point.lat.value * math.pi / 180
+        lon = point.lon.value * math.pi / 180
+        sin = math.sin(lat)
+        return MapPoint( lon, 0.5 * math.log( (1+sin) / (1-sin) ) )
 
 def totilepoint(mappoint, zoom):
     x = mappoint.x + math.pi
