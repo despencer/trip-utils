@@ -1,6 +1,12 @@
 import json
 import geo
 import geomap
+import skia
+
+class Canvas:
+    def __init__(self, width, height):
+        self.surface = skia.Surface(width, height)
+        self.canvas = self.surface.getCanvas()
 
 class Map:
     def __init__(self):
@@ -21,6 +27,7 @@ class Map:
         mapspec.storage = jmap['source']['storage']
         mapspec.provider = jmap['source']['provider']
         mapspec.zoom = int(jmap['source']['zoom'])
+        mapspec.target = jmap['target']
         return mapspec
 
     def gettilebounds(self, proj):
@@ -29,4 +36,9 @@ class Map:
         lt.y -= int(self.size.y / 2)
         return geomap.MapBounds.fromltrb(lt.x, lt.y, lt.x+self.size.x-1, lt.y+self.size.y-1)
 
+    def opencanvas(self):
+        return Canvas(self.size.x, self.size.y)
 
+    def store(self, canvas):
+        image = canvas.surface.makeImageSnapshot()
+        image.save(self.target, skia.kPNG)

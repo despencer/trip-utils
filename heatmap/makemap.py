@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import argparse
 import logging
+import skia
 import sys
 import os
 sys.path.insert(1, os.path.abspath('../geo'))
@@ -10,6 +11,11 @@ import mapdraw
 import tiles
 import geomap
 
+def drawmap(view, canvas, bounds, zoom):
+    point = geomap.gettileno(bounds.corners()[0])
+    tile = view.gettile(point.x, point.y, zoom)
+    canvas.canvas.drawImage(skia.Image.MakeFromEncoded(tile.data), 0, 0)
+
 def make(mapfile):
     mapspec = mapdraw.Map.load(mapfile)
     with tiles.TileCache(mapspec.storage) as cache:
@@ -18,6 +24,9 @@ def make(mapfile):
         bounds = mapspec.gettilebounds(proj)
         print('Map', bounds)
         view.updatetiles(bounds, mapspec.zoom)
+        canvas = mapspec.opencanvas()
+        drawmap(view, canvas, bounds, mapspec.zoom)
+        mapspec.store(canvas)
 
 if __name__ == '__main__':
     logging.basicConfig(filename='makemap.log', filemode='w', level=logging.DEBUG)

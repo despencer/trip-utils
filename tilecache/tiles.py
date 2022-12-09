@@ -86,6 +86,10 @@ class Tile:
     def createsame(cls, db, versionid, tile):
         cls.create(db, versionid, tile.x, tile.y, tile.zoom, tile.offset, tile.size)
 
+class TileImage:
+    def __init__(self, data):
+        self.data = data
+
 class TileView:
     def __init__(self, cache, version, provider):
         self.cache = cache
@@ -126,10 +130,17 @@ class TileView:
 
     def updatetiles(self, tilebounds, level):
         tilebounds = tilebounds.mapcorners(geomap.gettileno)
-        print('Updating', tilebounds)
+        print('Updating', tilebounds, 'at', level)
         for x in range(tilebounds.left, tilebounds.right+1):
             for y in range(tilebounds.top, tilebounds.bottom+1):
                 self.check(x, y, level)
+
+    def gettile(self, x, y, zoom):
+        tile = Tile.getbypos(self.cache.dbrun, self.version.provider, x, y, zoom)
+        if tile == None:
+            return None
+        self.cache.tiles.seek(tile.offset)
+        return TileImage(self.cache.tiles.read(tile.size))
 
 class TileCache:
     def __init__(self, cachename):
