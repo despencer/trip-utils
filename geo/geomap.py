@@ -79,3 +79,6 @@ def totilepoint(mappoint, zoom):
 
 def gettileno(mappoint):
     return MapPoint( mappoint.x >> tilepower, mappoint.y >> tilepower)
+
+def gettileorigin(mappoint):
+    return MapPoint( mappoint.x << tilepower, mappoint.y << tilepower)

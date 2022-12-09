@@ -12,9 +12,18 @@ import tiles
 import geomap
 
 def drawmap(view, canvas, bounds, zoom):
-    point = geomap.gettileno(bounds.corners()[0])
-    tile = view.gettile(point.x, point.y, zoom)
-    canvas.canvas.drawImage(skia.Image.MakeFromEncoded(tile.data), 0, 0)
+    corner = bounds.corners()[0]
+    basetileno = geomap.gettileno(corner)
+    baseoffset = geomap.gettileorigin(basetileno)
+    offset = geomap.MapPoint(baseoffset.x, baseoffset.y)
+    while offset.x <= bounds.right:
+        offset.y = baseoffset.y
+        while offset.y <= bounds.bottom:
+            tileno = geomap.gettileno(offset)
+            tile = view.gettile(tileno.x, tileno.y, zoom)
+            canvas.canvas.drawImage(skia.Image.MakeFromEncoded(tile.data), offset.x-corner.x, offset.y-corner.y)
+            offset.y += geomap.tilesize
+        offset.x += geomap.tilesize
 
 def make(mapfile):
     mapspec = mapdraw.Map.load(mapfile)
