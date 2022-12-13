@@ -10,7 +10,7 @@ class OziTrack:
     @classmethod
     def loadfile(cls,filename):
         track = cls()
-        points = pd.read_csv(filename, skiprows=5, header=0, names=['Latitude','Longitude','Start','Altitude','Timestamp','t1','t2'])
+        points = pd.read_csv(filename, encoding='cp1251', skiprows=5, header=0, names=['Latitude','Longitude','Start','Altitude','Timestamp','t1','t2'])
         points.drop(columns = ['t1','t2'], inplace=True)
 
         points['TS'] = points.apply(lambda x: OziTrack.convertdate(x.Timestamp, x.Altitude), axis=1)
