@@ -10,17 +10,35 @@ basedirs = ['/mnt/mobihome/gps-tracks/archive/personal', '/mnt/mobihome/gps-trac
 rfn = '/mnt/mobihome/gps-tracks/trackstat.txt'
 maxfile = 0
 
-def loadtracks(dirname):
+def diriterator(dirname):
     print(f'\tDoing {dirname}')
-    tracks = []
+    tracks = 0
     for f in os.listdir(dirname):
-        file = os.path.join(dirname, f)
-        if os.path.isfile(file):
-            t = OziTrack.loadfile(file)
-            tracks.append( (os.path.splitext(f)[0], t.distance, t.date, t.duration, t.velocity) )
-        if maxfile > 0 and maxfile <= len(tracks):
+        filename = os.path.join(dirname, f)
+        if os.path.isfile(filename):
+            if len(os.path.splitext(f)[0]) >= 8:
+                tracks += 1
+                yield filename
+        else:
+            for subfilename in diriterator(filename):
+                yield subfilename
+        if maxfile > 0 and maxfile <= tracks:
             break
-    return tracks
+
+def trackiterator(section):
+    for base in basedirs:
+        dirname = os.path.join(base, section)
+        if os.path.isdir(dirname):
+            for filename in diriterator(dirname):
+                yield filename
+
+def defaultperiod(tdate):
+    return str(tdate.year)
+
+def winterperiod(tdate):
+    if tdate.month >= 6:
+        return str(tdate.year+1)
+    return str(tdate.year)
 
 def printduration(seconds):
     hours, rem = divmod(seconds, 3600)
@@ -45,23 +63,21 @@ def printsection(tracks, rfile):
     rfile.write(printdf(tracks, 'Duration')+"\n")
     rfile.write(printdf(tracks, 'Velocity')+"\n\n")
 
-def dosection(path, rfile, showannual = True):
+def dosection(path, rfile, showannual=True, period=None):
     print(f'Doing {path}')
     rfile.write('{0}\n{1}\n\n'.format(path, '='*len(path)))
     total = []
     section = {}
-    for base in basedirs:
-        dirname = os.path.join(base, path)
-        if os.path.isdir(dirname):
-            for d in os.listdir(dirname):
-                sub = os.path.join(dirname, d)
-                if os.path.isdir(sub):
-                    tracks = loadtracks(sub)
-                    total.extend(tracks)
-                    if d in section:
-                        section[d].extend(tracks)
-                    else:
-                        section[d] = tracks
+    if period == None:
+        period = defaultperiod
+    for filename in trackiterator(path):
+        t = OziTrack.loadfile(filename)
+        row = (os.path.splitext(os.path.basename(filename))[0], t.distance, t.date, t.duration, t.velocity)
+        p = period(t.date)
+        if p not in section:
+            section[p] = []
+        section[p].append(row)
+        total.append(row)
     if showannual:
         for t in section.values():
             printsection(t, rfile)
@@ -73,4 +89,5 @@ if __name__ == "__main__":
         dosection('velo', rfile)
         dosection('car', rfile, showannual = False)
         dosection('travels', rfile, showannual = False)
+        dosection('ski', rfile, showannual = True, period=winterperiod)
     print(f'see {rfn} for results')

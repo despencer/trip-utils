@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 import pandas as pd
 from geopy import distance
 import os.path
@@ -27,6 +27,8 @@ class OziTrack:
         track.distance = points['Dist'].sum()
         if not pd.isna(points['TS'].min()):
             track.date = points['TS'].min().date()
+            if track.date != cls.convertdatefromfile(filename):
+                  raise Exception(print(f'File {filename} has date {track.date}'))
             track.duration = points['TS'].max() - points['TS'].min()
             duration = ( (track.duration.days * 24) + (track.duration.seconds/3600.0) )
             if track.duration == None or duration == 0:
@@ -34,7 +36,7 @@ class OziTrack:
             else:
                 track.velocity = track.distance / duration
         else:
-            track.date = None
+            track.date = cls.convertdatefromfile(filename)
             track.duration = None
             track.velocity = None
         return track
@@ -48,9 +50,15 @@ class OziTrack:
     @classmethod
     def convertdate2(cls, ozidate, trackdate):
         candidate = (datetime(1899, 12, 30, tzinfo=timezone.utc) + timedelta(days=ozidate)).astimezone()
-        if (candidate - trackdate).total_seconds() < 28*3600:
+        totsec = (candidate - trackdate).total_seconds()
+        if 0 <= totsec and totsec < 28*3600:
             return candidate
         return None
+
+    @classmethod
+    def convertdatefromfile(cls, filename):
+      fdate = os.path.splitext(os.path.basename(filename))[0]
+      return date(int(fdate[0:4]), int(fdate[4:6]), int(fdate[6:8]))
 
     @classmethod
     def convertaltitude(cls, x):
