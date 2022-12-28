@@ -2,7 +2,7 @@ import dbmeta
 
 class DbTrack:
     def __init__(self):
-        dbmeta.DbMeta.init(DbTrack, self)
+        dbmeta.DbMeta.init(self)
 
     @classmethod
     def getbyname(cls, db, name):
@@ -14,7 +14,7 @@ class DbTrack:
         track.id = db.genid()
         track.name = name
         track.hash = hash
-        dbmeta.DbMeta.insert(db, cls, track)
+        dbmeta.DbMeta.insert(db, track)
         return track
 
 def init(db):

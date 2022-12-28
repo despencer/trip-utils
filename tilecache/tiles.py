@@ -38,7 +38,7 @@ class TileProvider:
         provider = cls()
         provider.id = db.genid()
         provider.name = name
-        return dbmeta.DbMeta.insert(db, cls, provider)
+        return dbmeta.DbMeta.insert(db, provider)
 
 class TileVersion:
     def __init__(self):
@@ -51,7 +51,7 @@ class TileVersion:
         version.provider = provider
         version.version_no = no
         version.version_parameter = parameter
-        return dbmeta.DbMeta.insert(db, cls, version)
+        return dbmeta.DbMeta.insert(db, version)
 
     @classmethod
     def getlast(cls, db, provider):
@@ -79,7 +79,7 @@ class Tile:
         newtile.download = dbmeta.DbMeta.now()
         newtile.offset = offset
         newtile.size = size
-        dbmeta.DbMeta.insert(db, Tile, newtile)
+        dbmeta.DbMeta.insert(db, newtile)
         db.finish()
 
     @classmethod
