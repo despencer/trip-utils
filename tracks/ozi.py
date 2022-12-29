@@ -8,7 +8,7 @@ class OziTrack:
         pass
 
     @classmethod
-    def loadfile(cls,filename):
+    def loadfile(cls, filename, withpoints=False):
         track = cls()
         points = pd.read_csv(filename, encoding='cp1251', skiprows=5, header=0, names=['Latitude','Longitude','Start','Altitude','Timestamp','t1','t2'])
         points.drop(columns = ['t1','t2'], inplace=True)
@@ -39,6 +39,8 @@ class OziTrack:
             track.date = cls.convertdatefromfile(filename)
             track.duration = None
             track.velocity = None
+        if withpoints:
+            track.points = points
         return track
 
     @classmethod
