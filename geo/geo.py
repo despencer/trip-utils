@@ -105,6 +105,15 @@ class Rectangle:
         return [ lt, rb ]
 
     @classmethod
+    def fromcorners(cls, lt, rb):
+        m = cls()
+        m.left.value = lt.lon.value
+        m.top.value = lt.lat.value
+        m.right.value = rb.lon.value
+        m.bottom.value = rb.lat.value
+        return m
+
+    @classmethod
     def parse(cls, strvalue):
         r = Rectangle()
         points = strvalue.split('-')

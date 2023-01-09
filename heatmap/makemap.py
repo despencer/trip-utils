@@ -2,6 +2,7 @@
 import argparse
 import logging
 import skia
+import itertools
 import sys
 import os
 sys.path.insert(1, os.path.abspath('../geo'))
@@ -11,7 +12,16 @@ import mapdraw
 import tiles
 import geomap
 
-def drawmap(view, canvas, bounds, zoom):
+def drawheat(view, mapspec):
+    proj = view.projection()
+    cell = geomap.MapPoint( int(mapspec.size.x / mapspec.granularity), int(mapspec.size.y / mapspec.granularity) )
+    origin = mapspec.gettilebounds(proj).corners()[0]
+    for x, y in itertools.product( range(0, mapspec.size.x, cell.x), range(0, mapspec.size.y, cell.y) ):
+        cellbounds = geomap.MapBounds.fromltrb(origin.x+x, origin.y+y, origin.x+x+cell.x, origin.y+y+cell.y)
+        cellgeo = cellbounds.mapcorners( lambda x:geomap.fromtilepoint(x, mapspec.zoom) ).togeo(proj)
+        print(cellbounds, cellgeo)
+
+def drawbase(view, canvas, bounds, zoom):
     corner = bounds.corners()[0]
     basetileno = geomap.gettileno(corner)
     baseoffset = geomap.gettileorigin(basetileno)
@@ -34,7 +44,8 @@ def make(mapfile):
         print('Map', bounds)
         view.updatetiles(bounds, mapspec.zoom)
         canvas = mapspec.opencanvas()
-        drawmap(view, canvas, bounds, mapspec.zoom)
+#        drawbase(view, canvas, bounds, mapspec.zoom)
+        drawheat(view, mapspec)
         mapspec.store(canvas)
 
 if __name__ == '__main__':

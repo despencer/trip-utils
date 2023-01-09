@@ -42,7 +42,7 @@ class TileProvider:
 
 class TileVersion:
     def __init__(self):
-        dbmeta.DbMeta.init(TileVersion, self)
+        dbmeta.DbMeta.init(self)
 
     @classmethod
     def create(cls, db, provider, no, parameter):
@@ -60,7 +60,7 @@ class TileVersion:
                 WHERE v.provider = p.id AND p.name = ? ORDER BY v.version_no DESC''', provider)
 class Tile:
     def __init__(self):
-        dbmeta.DbMeta.init(Tile, self)
+        dbmeta.DbMeta.init(self)
 
     @classmethod
     def getbypos(cls, db, provider, x, y, zoom):

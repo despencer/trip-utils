@@ -1,4 +1,5 @@
 import math
+import geo
 
 tilesize = 256
 tilepower = 8
@@ -46,6 +47,12 @@ class MapBounds:
     def mapcorners(self, func):
         return MapBounds.fromcorners( *list(map( func, self.corners() )) )
 
+    def togeo(self, projection):
+        return geo.Rectangle.fromcorners( *list(map(projection.fromprojection, self.corners())) )
+
+    def size(self):
+        return MapPoint(self.right-self.left, self.bottom-self.top)
+
     @classmethod
     def fromcorners(cls, lt, rb):
         m = cls()
@@ -64,10 +71,13 @@ class SimpleMercator:
 
     def toprojection(self, point):
         ''' This is a Mercator projection. It transforms lat-lon to (2*PI x 2*PI) right-top square '''
-        lat = point.lat.value * math.pi / 180
-        lon = point.lon.value * math.pi / 180
+        lat = point.lat.value * math.pi / 180.0
+        lon = point.lon.value * math.pi / 180.0
         sin = math.sin(lat)
         return MapPoint( lon, 0.5 * math.log( (1+sin) / (1-sin) ) )
+
+    def fromprojection(self, point):
+        return geo.Point.fromlatlon( math.atan(math.sinh(point.y)) * 180.0 / math.pi, point.x * 180.0 / math.pi)
 
 def totilepoint(mappoint, zoom):
     x = mappoint.x + math.pi
@@ -76,6 +86,12 @@ def totilepoint(mappoint, zoom):
     x = int( x * numtiles / (math.pi * 2) )
     y = int( y * numtiles / (math.pi * 2) )
     return MapPoint(x, y)
+
+def fromtilepoint(mappoint, zoom):
+    numtiles = (1 << (zoom-1) ) * tilesize
+    x = mappoint.x * 2 * math.pi / numtiles
+    y = mappoint.y * 2 * math.pi / numtiles
+    return MapPoint( x-math.pi, math.pi-y )
 
 def gettileno(mappoint):
     return MapPoint( mappoint.x >> tilepower, mappoint.y >> tilepower)

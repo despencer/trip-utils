@@ -28,6 +28,7 @@ class Map:
         mapspec.provider = jmap['source']['provider']
         mapspec.zoom = int(jmap['source']['zoom'])
         mapspec.target = jmap['target']
+        mapspec.granularity = 10
         return mapspec
 
     def gettilebounds(self, proj):
