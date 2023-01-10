@@ -12,7 +12,6 @@ from dbmeta import Db
 import tracklist
 import ozi
 
-trackdir = "~/.tiles"
 tracklist.maxfile = 2
 
 def filehash(trackfile):
@@ -54,10 +53,7 @@ def checktrack(db, trackfile):
 
 def loadsection(section):
     print(f'Doing {section}')
-    dbpath = os.path.expanduser(trackdir)
-    if not os.path.exists(dbpath):
-        os.makedirs(dbpath)
-    dbfile = os.path.join(dbpath, section + ".tracks")
+    dbfile = trackdb.getdbfile(section)
     with Db(dbfile) as db:
         trackdb.init(db)
         with db.run() as run:
