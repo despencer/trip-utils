@@ -13,14 +13,7 @@ class Map:
         pass
 
     @classmethod
-    def load(cls, filename):
-        with open(filename) as jfile:
-            jmap = json.load(jfile)
-            return cls.fromjson(jmap)
-
-    @classmethod
-    def fromjson(cls, jfile):
-        jmap = jfile['map']
+    def fromjson(cls, jmap):
         mapspec = Map()
         mapspec.center = geo.Point.parse(jmap['center'])
         mapspec.size = geomap.MapPoint.parse(jmap['size'])
@@ -28,7 +21,6 @@ class Map:
         mapspec.provider = jmap['source']['provider']
         mapspec.zoom = int(jmap['source']['zoom'])
         mapspec.target = jmap['target']
-        mapspec.granularity = 10
         return mapspec
 
     def gettilebounds(self, proj):
@@ -43,3 +35,21 @@ class Map:
     def store(self, canvas):
         image = canvas.surface.makeImageSnapshot()
         image.save(self.target, skia.kPNG)
+
+class HeatMap:
+    def __init__(self):
+        self.granularity = 10
+
+    @classmethod
+    def fromjson(cls, jfile):
+        jmap = jfile['map']
+        mapspec = Map.fromjson(jmap)
+        heatmap = cls()
+        setattr(mapspec, 'heatmap', heatmap)
+        return mapspec
+
+    @classmethod
+    def load(cls, filename):
+        with open(filename) as jfile:
+            jmap = json.load(jfile)
+            return cls.fromjson(jmap)

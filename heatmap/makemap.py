@@ -16,7 +16,7 @@ import trackdb
 
 def drawheat(view, mapspec, section):
     proj = view.projection()
-    cell = geomap.MapPoint( int(mapspec.size.x / mapspec.granularity), int(mapspec.size.y / mapspec.granularity) )
+    cell = geomap.MapPoint( int(mapspec.size.x / mapspec.heatmap.granularity), int(mapspec.size.y / mapspec.heatmap.granularity) )
     origin = mapspec.gettilebounds(proj).corners()[0]
     with trackdb.open(section) as db:
         for x, y in itertools.product( range(0, mapspec.size.x, cell.x), range(0, mapspec.size.y, cell.y) ):
@@ -39,7 +39,7 @@ def drawbase(view, canvas, bounds, zoom):
         offset.x += geomap.tilesize
 
 def make(mapfile):
-    mapspec = mapdraw.Map.load(mapfile)
+    mapspec = mapdraw.HeatMap.load(mapfile)
     with tiles.TileCache(mapspec.storage) as cache:
         view = cache.openview(mapspec.provider)
         proj = view.projection()
