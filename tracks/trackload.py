@@ -53,13 +53,10 @@ def checktrack(db, trackfile):
 
 def loadsection(section):
     print(f'Doing {section}')
-    dbfile = trackdb.getdbfile(section)
-    with Db(dbfile) as db:
-        trackdb.init(db)
-        with db.run() as run:
-            for filename in tracklist.trackiterator(section):
-                if checktrack(run, filename):
-                    loadtrack(run, filename)
+    with trackdb.open(section) as db:
+        for filename in tracklist.trackiterator(section):
+            if checktrack(db, filename):
+                loadtrack(db, filename)
 
 if __name__ == "__main__":
     logging.basicConfig(filename='trackload.log', filemode='w', level=logging.DEBUG)

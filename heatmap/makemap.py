@@ -18,7 +18,7 @@ def drawheat(view, mapspec, section):
     proj = view.projection()
     cell = geomap.MapPoint( int(mapspec.size.x / mapspec.granularity), int(mapspec.size.y / mapspec.granularity) )
     origin = mapspec.gettilebounds(proj).corners()[0]
-    with trackdb.Db(section) as db:
+    with trackdb.open(section) as db:
         for x, y in itertools.product( range(0, mapspec.size.x, cell.x), range(0, mapspec.size.y, cell.y) ):
             cellbounds = geomap.MapBounds.fromltrb(origin.x+x, origin.y+y, origin.x+x+cell.x, origin.y+y+cell.y)
             cellgeo = cellbounds.mapcorners( lambda x:geomap.fromtilepoint(x, mapspec.zoom) ).togeo(proj)

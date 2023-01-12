@@ -98,7 +98,7 @@ class TileView:
         logging.info('TileView version %s/%s created', version.version_no, version.version_parameter)
 
     def check(self, x, y, zoom):
-        tile = Tile.getbypos(self.cache.dbrun, self.version.provider, x, y, zoom)
+        tile = Tile.getbypos(self.cache.db, self.version.provider, x, y, zoom)
         if tile == None or tile.version != self.version.id:
             print('Obtaining ', x, y)
             url = self.provider.geturl(x, y, zoom, self.version.version_parameter)
@@ -113,14 +113,14 @@ class TileView:
                     same = self.compare(loader.data, olddata)
                 if same:
                     logging.info('Tile %s@%s at %s using %s size %s', x, y, zoom, tile.offset, tile.size)
-                    Tile.createsame(self.cache.dbrun, self.version.id, tile)
+                    Tile.createsame(self.cache.db, self.version.id, tile)
                 else:
                     self.cache.tiles.seek(0, os.SEEK_END)
                     offset = self.cache.tiles.tell()
                     size = len(loader.data)
                     self.cache.tiles.write(loader.data)
                     logging.info('Tile %s@%s at %s written at %s size %s', x, y, zoom, offset, size)
-                    Tile.create(self.cache.dbrun, self.version.id, x, y, zoom, offset, size)
+                    Tile.create(self.cache.db, self.version.id, x, y, zoom, offset, size)
 
     def compare(self, newdata, olddata):
         return newdata == olddata
@@ -136,7 +136,7 @@ class TileView:
                 self.check(x, y, level)
 
     def gettile(self, x, y, zoom):
-        tile = Tile.getbypos(self.cache.dbrun, self.version.provider, x, y, zoom)
+        tile = Tile.getbypos(self.cache.db, self.version.provider, x, y, zoom)
         if tile == None:
             return None
         self.cache.tiles.seek(tile.offset)
@@ -153,27 +153,23 @@ class TileCache:
             os.makedirs(tpath)
         indexfile = os.path.join(tpath, self.cachename + ".tindex")
         imagefile = os.path.join(tpath, self.cachename + ".tiles")
-        self.db = dbmeta.Db(indexfile)
+        self.db = dbmeta.Db(indexfile, self.initdb)
         self.db.open()
-        self.dbrun = self.db.run()
-        self.initdb()
         self.tiles = open(imagefile, 'a+b')
 
     def close(self):
-        self.dbrun.finish()
         self.db.close()
-        self.dbrun = None
         self.db = None
         self.tiles.close()
         self.tiles = None
 
     def openview(self, provider):
-        return TileView(self, TileVersion.getlast(self.dbrun, provider), self.providers[provider])
+        return TileView(self, TileVersion.getlast(self.db, provider), self.providers[provider])
 
     def addversion(self, provider, parameter):
-        version = TileVersion.getlast(self.dbrun, provider)
-        TileVersion.create(self.dbrun, version.provider, version.version_no+1, parameter )
-        self.dbrun.finish()
+        version = TileVersion.getlast(self.db, provider)
+        TileVersion.create(self.db, version.provider, version.version_no+1, parameter )
+        self.db.finish()
 
     def __enter__(self):
         self.open()
@@ -182,8 +178,8 @@ class TileCache:
     def __exit__(self, extype, exvalue, extrace):
         self.close()
 
-    def initdb(self):
-        fresh = self.db.deploypacket('gis.tiles',1,
+    def initdb(self, db):
+        fresh = db.deploypacket('gis.tiles',1,
           [ "CREATE TABLE tile_provider (id INTEGER NOT NULL, name TEXT NOT NULL, PRIMARY KEY(id), UNIQUE(name))",
             "CREATE TABLE tile_version (id INTEGER NOT NULL, provider INTEGER NOT NULL, version_no INTEGER NOT NULL, version_parameter TEXT NOT NULL, PRIMARY KEY (id), UNIQUE (provider, version_no), FOREIGN KEY (provider) REFERENCES tile_provider (id))",
             '''CREATE TABLE tile_tile (version INTEGER NOT NULL, ZOOM INTEGER NOT NULL, x INTEGER NOT NULL, y INTEGER NOT NULL, download INTEGER NOT NULL,
@@ -192,5 +188,5 @@ class TileCache:
         dbmeta.DbMeta.set(TileVersion, 'tile_version', ['id', 'provider', 'version_no', 'version_parameter'])
         dbmeta.DbMeta.set(Tile, 'tile_tile', ['version', 'zoom', 'x', 'y', 'download', 'offset', 'size'])
         if fresh:
-            osm = TileProvider.create(self.dbrun, 'osm')
-            TileVersion.create(self.dbrun, osm.id, 1, datetime.datetime.now().strftime('%Y%m%d') )
+            osm = TileProvider.create(db, 'osm')
+            TileVersion.create(db, osm.id, 1, datetime.datetime.now().strftime('%Y%m%d') )

@@ -45,37 +45,18 @@ class DbTrackPoint:
     def getbybounds(cls, db, bounds):
         return dbmeta.DbMeta.getlist(db, cls, "lat >= ? AND lat < ? AND lon >= ? AND lon < ?", bounds.bottom.value, bounds.top.value, bounds.left.value, bounds.right.value)
 
-class Db:
-    def __init__(self, section):
-        dbpath = os.path.expanduser(trackdir)
-        if not os.path.exists(dbpath):
-            os.makedirs(dbpath)
-        self.dbpath = os.path.join(dbpath, section + ".tracks")
+def open(section):
+    dbpath = os.path.expanduser(trackdir)
+    if not os.path.exists(dbpath):
+         os.makedirs(dbpath)
+    dbpath = os.path.join(dbpath, section + ".tracks")
+    return dbmeta.Db(dbpath, initdb)
 
-    def init(self):
-        self.db.deploypacket('tracks',1,
+def initdb(db):
+    db.deploypacket('tracks',1,
             [ "CREATE TABLE tracks_track (id INTEGER NOT NULL, name TEXT NOT NULL, hash BLOB NOT NULL, PRIMARY KEY(id), UNIQUE(name))",
             '''CREATE TABLE tracks_point (track INTEGER NOT NULL, pos INTEGER NOT NULL, otime INTEGER NULL, ctime INTEGER NOT NULL,
                   lat REAL NOT NULL, lon REAL NOT NULL, alt REAL NULL, PRIMARY KEY (track, pos), FOREIGN KEY (track) REFERENCES tracks_track(id))'''])
-        dbmeta.DbMeta.set(DbTrack, 'tracks_track', ['id', 'name', 'hash'])
-        dbmeta.DbMeta.set(DbTrackPoint, 'tracks_point', ['track','pos', 'otime', 'ctime', 'lat', 'lon', 'alt'] )
-
-    def open(self):
-        self.db = dbmeta.Db(self.dbpath)
-        self.db.open()
-        self.init()
-        self.run = self.db.run()
-
-    def finish(self, success=True):
-        self.run.finish(success)
-        self.db.close()
-        self.run = None
-        self.db = None
-
-    def __enter__(self):
-        self.open()
-        return self.run
-
-    def __exit__(self, extype, exvalue, extrace):
-        self.finish(extype == None)
+    dbmeta.DbMeta.set(DbTrack, 'tracks_track', ['id', 'name', 'hash'])
+    dbmeta.DbMeta.set(DbTrackPoint, 'tracks_point', ['track','pos', 'otime', 'ctime', 'lat', 'lon', 'alt'] )
 
