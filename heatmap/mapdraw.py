@@ -1,4 +1,5 @@
 import json
+import math
 import geo
 import geomap
 import skia
@@ -38,7 +39,8 @@ class Map:
 
 class HeatMap:
     def __init__(self):
-        self.granularity = 10
+        self.granularity = 200
+        self.fading = 365.25 * 24 * 3600 / math.log(0.5)   # an year for half
 
     @classmethod
     def fromjson(cls, jfile):
