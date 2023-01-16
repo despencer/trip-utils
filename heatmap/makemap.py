@@ -15,6 +15,7 @@ import mapdraw
 import tiles
 import geomap
 import trackdb
+from dbmeta import Indicator
 
 class Cell:
     def __init__(self):
@@ -27,8 +28,11 @@ def drawheat(view, mapspec, section):
     now = int(datetime.now(timezone.utc).timestamp())
     cells = []
     maxvalue = 0
+    indy = Indicator()
     with trackdb.open(section) as db:
         for x, y in itertools.product( range(0, mapspec.size.x, cellsize.x), range(0, mapspec.size.y, cellsize.y) ):
+            if indy.ready():
+                print(f'Doing column {x}')
             cell = Cell()
             cell.bounds = geomap.MapBounds.fromltrb(origin.x+x, origin.y+y, origin.x+x+cellsize.x, origin.y+y+cellsize.y)
             cell.geo = cell.bounds.mapcorners( lambda x:geomap.fromtilepoint(x, mapspec.zoom) ).togeo(proj)
