@@ -4,7 +4,7 @@ import logging
 import sys
 import os
 import hashlib
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone, time
 import pandas as pd
 sys.path.insert(1, os.path.abspath('../../pydma'))
 import trackdb
@@ -41,7 +41,7 @@ def checktrack(db, trackfile):
     track = trackdb.DbTrack.getbyname(db, name)
     hash = filehash(trackfile)
     if track == None:
-        trackdb.DbTrack.create(db, name, hash)
+        trackdb.DbTrack.create(db, name, hash, datetime.combine(ozi.OziTrack.convertdatefromfile(trackfile),time(0,0),tzinfo=timezone.utc) )
         return True
     else:
         if track.hash != hash:

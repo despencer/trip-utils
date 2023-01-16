@@ -33,9 +33,9 @@ def drawheat(view, mapspec, section):
             cell.bounds = geomap.MapBounds.fromltrb(origin.x+x, origin.y+y, origin.x+x+cellsize.x, origin.y+y+cellsize.y)
             cell.geo = cell.bounds.mapcorners( lambda x:geomap.fromtilepoint(x, mapspec.zoom) ).togeo(proj)
             cell.value = 0.0
-            for p in trackdb.DbTrackPoint.getbybounds(db, cell.geo):
-                cell.value += math.exp( (now-p.ctime) / mapspec.heatmap.fading)
-#                print(datetime.fromtimestamp(p.ctime), now-p.ctime, int(datetime.now(timezone.utc).timestamp())-now, value )
+            for _, tdate in trackdb.DbTrackPoint.getdatebybounds(db, cell.geo):
+                cell.value += math.exp( (now-tdate) / mapspec.heatmap.fading)
+#                print(datetime.fromtimestamp(tdate), now-tdate, int(datetime.now(timezone.utc).timestamp())-now, value )
             cells.append(cell)
             if maxvalue < cell.value:
                 maxvalue = cell.value
