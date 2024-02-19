@@ -6,6 +6,7 @@ import itertools
 import sys
 import os
 from datetime import datetime, timezone
+from collections import Counter
 import math
 sys.path.insert(1, os.path.abspath('../geo'))
 sys.path.insert(1, os.path.abspath('../tilecache'))
@@ -28,7 +29,7 @@ def drawheat(view, mapspec, section):
     now = int(datetime.now(timezone.utc).timestamp())
     cells = []
     maxvalue = 0
-    indy = Indicator()
+    indy = Indicator(4)
     with trackdb.open(section) as db:
         for x, y in itertools.product( range(0, mapspec.size.x, cellsize.x), range(0, mapspec.size.y, cellsize.y) ):
             if indy.ready():
@@ -37,17 +38,21 @@ def drawheat(view, mapspec, section):
             cell.bounds = geomap.MapBounds.fromltrb(origin.x+x, origin.y+y, origin.x+x+cellsize.x, origin.y+y+cellsize.y)
             cell.geo = cell.bounds.mapcorners( lambda x:geomap.fromtilepoint(x, mapspec.zoom) ).togeo(proj)
             cell.value = 0.0
-            for _, tdate in trackdb.DbTrackPoint.getdatebybounds(db, cell.geo):
+            for tid, tdate in trackdb.DbTrackPoint.getdatebybounds(db, cell.geo):
                 cell.value += math.exp( (now-tdate) / mapspec.heatmap.fading)
+                logging.debug('At %sx%s track %s %s value %s', x, y, tid, tdate, math.exp( (now-tdate) / mapspec.heatmap.fading) )
 #                print(datetime.fromtimestamp(tdate), now-tdate, int(datetime.now(timezone.utc).timestamp())-now, value )
-            cells.append(cell)
+            if cell.value > 0.0:
+                cells.append(cell)
             if maxvalue < cell.value:
                 maxvalue = cell.value
     canvas = mapspec.opencanvas()
     canvas.canvas.clear(0)
+    colorrange = 240 - 32
     for cell in cells:
         rect = skia.Rect( cell.bounds.left-origin.x, cell.bounds.top-origin.y, cell.bounds.right-origin.x, cell.bounds.bottom-origin.y)
-        color = int(cell.value * 255 / maxvalue)
+        color = 32 + min(int(cell.value * colorrange / maxvalue), colorrange)
+        logging.debug('At %sx%s cell value %s color %s', cell.bounds.left-origin.x, cell.bounds.top-origin.y, cell.value, color)
         canvas.canvas.drawRect(rect, skia.Paint(Color= (color<<24) | (0xFF0000) ) )
     return canvas
 

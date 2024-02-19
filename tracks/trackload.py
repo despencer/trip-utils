@@ -12,7 +12,7 @@ from dbmeta import Db
 import tracklist
 import ozi
 
-tracklist.maxfile = 2
+# tracklist.maxfile = 2
 
 def filehash(trackfile):
     md5 = hashlib.md5()

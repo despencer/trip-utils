@@ -40,7 +40,7 @@ class Map:
 class HeatMap:
     def __init__(self):
         self.granularity = 200
-        self.fading = 365.25 * 24 * 3600 / math.log(0.5)   # an year for half
+        self.fading = 4 * 365.25 * 24 * 3600 / math.log(0.5)   # an year for half
 
     @classmethod
     def fromjson(cls, jfile):
